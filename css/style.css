@@ -6,7 +6,7 @@
         min-height: 100vh;
 }
 nav {
-    background-color: #E6F4F2;
+    background-color: #f4e6e6;
     border-bottom: 1px solid #1a1a1a;
 }
 nav ul{
@@ -29,7 +29,7 @@ nav a{
     color: #1a1a1a; 
 }
 nav a:hover{
-    background-color: #3197A2;
+    background-color: #a23131;
     color: #E6F4F2;
     border-radius: 30px;
 }
