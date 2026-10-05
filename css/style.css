@@ -1,0 +1,35 @@
+{
+    margin: 0;
+    padding: 0;
+}
+    boddy {
+        min-height: 100vh;
+}
+nav {
+    background-color: #E6F4F2;
+    border-bottom: 1px solid #1a1a1a;
+}
+nav ul{
+    width: 100%;
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: helvetica, sans-serif;
+}
+nav li{
+    height: 50px;
+}
+nav a{
+    height: 100%;
+    padding: 0 30px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    color: #1a1a1a; 
+}
+nav a:hover{
+    background-color: #3197A2;
+    color: #E6F4F2;
+    border-radius: 30px;
+}
