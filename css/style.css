@@ -1,8 +1,8 @@
-{
+*{
     margin: 0;
     padding: 0;
 }
-    boddy {
+body {
         min-height: 100vh;
 }
 nav {
