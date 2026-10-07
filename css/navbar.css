@@ -1,17 +1,34 @@
+:root {
+    --hu-blauw: #00a1e1;
+    --hu-blauw-donker: #0088c8;
+    --hu-rood: #e6302b;
+    --hu-oranje: #e9650d;
+    --grijs: #757575;
+}
+
+
 *{
     margin: 0;
     padding: 0;
 }
 body{
-        min-height: 100vh;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #f5f7f9;
 }
+
 nav {
-    height: 70px;
-    background-color: #f4e6e6;
-    border-bottom: 1px solid #1a1a1a;
+    position: sticky;
+    top: 0;
+    height: 77px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
 nav ul{
-    width: 100%;
     height: 100%;
     list-style: none;
     display: flex;
@@ -21,6 +38,7 @@ nav ul{
 }
 nav li{
     height: 50px;
+    
 }
 nav a{
     height: 100%;
@@ -31,7 +49,20 @@ nav a{
     color: #1a1a1a; 
 }
 nav a:hover{
-    background-color: #a23131;
+     background-color: var(--hu-blauw);
     color: #E6F4F2;
     border-radius: 30px;
+}
+.balk {
+   
+    position: absolute;
+    left: 0;
+   font-size: 29px;
+    font-weight: 900;
+    color: var(--hu-blauw);
+      padding: 15px 30px;
+}
+
+.balk span {
+    color: var(--hu-rood);
 }
