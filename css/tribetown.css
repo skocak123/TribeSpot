@@ -5,6 +5,7 @@
 
   --color-blue: var(--hu-blauw);
   --color-red: var(--hu-rood);
+  --color-yellow: #f8ce1c;
   --color-green: var(--hu-groen);
   --color-white: white;
   --color-black: black;
@@ -13,13 +14,10 @@
   --color-border: #ddd;
 }
 
-* {
-  box-sizing: border-box;
-}
 
 body {
   margin: 0;
-  background: var(--color-red);
+  background: var(--hu-rood);
   color: var(--color-text);
   font-family: Arial, sans-serif;
 }
@@ -99,7 +97,7 @@ h1 {
   background-position: right 12px center;
   color: var(--color-white);
   font: inherit;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: bold;
   cursor: pointer;
 }
@@ -128,7 +126,7 @@ h1 {
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: 1fr 1fr;
   overflow: hidden;
-  border: 2px solid var(--color-black);
+  border: 2px solid var(--hu-blauw);
   border-radius: var(--border-radius-xl);
 }
 
@@ -151,7 +149,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: 8px 12px;
+  padding: 8px 15px;
   border: 1px solid var(--hu-blauw);
   border-radius: var(--border-radius-round);
   color: var(--hu-rood);
@@ -168,8 +166,8 @@ h1 {
 .room {
   position: relative;
   min-width: 0;
-  border-right: 2px solid var(--color-black);
-  border-bottom: 2px solid var(--color-black);
+  border-right: 2px solid var(--hu-blauw);
+  border-bottom: 2px solid var(--hu-blauw);
 }
 
 .room h2 {
@@ -177,7 +175,7 @@ h1 {
   top: 12px;
   left: 12px;
   margin: 0;
-  color: var(--color-blue);
+  color: var(--color-black);
   font-size: 12px;
 }
 
@@ -208,6 +206,7 @@ h1 {
   border-radius: 50%;
 }
 
+.yellow { background: var(--color-yellow); }
 .blue { background: var(--color-blue); }
 .red { background: var(--color-red); }
 .green { background: var(--color-green); }
@@ -245,7 +244,7 @@ h1 {
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-l);
   color: var(--color-blue);
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .status-buttons {
@@ -260,27 +259,52 @@ h1 {
   flex: 1;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 3px;
-  border: 1px solid var(--color-border);
+  gap: 5px;
+  padding: 8px 6px;
+  border: none;
   border-radius: var(--border-radius-round);
-  font-size: 10px;
+  background-color: var(--color-blue);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.status-button:hover {
+  background-color: var(--hu-rood);
+}
+
+.status-button:focus-visible {
+  outline: 2px solid var(--color-black);
+  outline-offset: 2px;
+}
+
+.status-button .status-dot {
+  border: 1.5px solid var(--color-white);
 }
 
 .share-button {
-  display: flex;
-  width: 100%;
-  min-height: 38px;
+ display: flex;
+  min-height: 34px;
+  min-width: 100%;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  margin-top: 4px;
+  gap: 5px;
+  padding: 8px 6px;
+  border: none;
   border-radius: var(--border-radius-round);
-  background: var(--color-blue);
+  background-color: var(--color-blue);
   color: var(--color-white);
-  font-size: 12px;
+  font: inherit;
+  font-size: 13px;
   font-weight: bold;
+  cursor: pointer;
 }
-
+.share-button:hover {
+  background-color: var(--hu-rood);
+}
 .connections {
   padding-top: 18px;
   border-top: 1px solid var(--color-border);
