@@ -133,6 +133,39 @@ h1 {
   border-radius: var(--border-radius-xl);
 }
 
+.field-box {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 12px;
+  border: 1px solid var(--hu-blauw);
+  border-radius: var(--border-radius-round);
+  color: var(--hu-rood);
+  font-size: 13px;
+  margin-left: 0px;
+  width: 100%;
+  margin-top: 6px;
+  font-weight: bold;
+}
+
+.field-box input {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 12px;
+  border: 1px solid var(--hu-blauw);
+  border-radius: var(--border-radius-round);
+  color: var(--hu-rood);
+  font-size: 13px;
+  margin-left: 0px;
+  width: 100%;
+  margin-top: 6px;
+  font-weight: bold;  
+  
+}
+
+
+
 .room {
   position: relative;
   min-width: 0;
