@@ -1,0 +1,20 @@
+:root {
+    --hu-blauw: #00a1e1;
+    --hu-blauw-donker: #0088c8;
+    --hu-rood: #e6302b;
+    --hu-oranje: #e9650d;
+    --hu-groen: #a6ce39;
+    --lichtblauw: #d9f1fb;
+    --grijs: #757575;
+    --geel: #f8ce1c;
+    --tekst: #333;
+    --rand: #ddd;
+
+    --border-radius-l: 8px;
+    --border-radius-xl: 16px;
+    --border-radius-round: 999px;
+}
+
+body {
+    font-family: Helvetica, Arial, sans-serif;
+}

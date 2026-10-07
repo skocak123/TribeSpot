@@ -1,20 +1,9 @@
-:root {
-    --hu-blauw: #00a1e1;
-    --hu-blauw-donker: #0088c8;
-    --hu-rood: #e6302b;
-    --hu-oranje: #e9650d;
-    --grijs: #757575;
-}
-
-
 *{
     margin: 0;
     padding: 0;
 }
 body{
     min-height: 100vh;
-    font-family: Arial, sans-serif;
-    background-color: #f5f7f9;
 }
 
 nav {
@@ -34,7 +23,6 @@ nav ul{
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: helvetica, sans-serif;
 }
 nav li{
     height: 50px;
