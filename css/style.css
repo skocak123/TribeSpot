@@ -1,0 +1,14 @@
+/* Gedeeld door alle pagina's: link dit bestand altijd als eerste */
+:root {
+    --hu-blauw: #00a1e1;
+    --hu-blauw-donker: #0088c8;
+    --hu-rood: #e6302b;
+    --hu-oranje: #e9650d;
+    --hu-groen: #a6ce39;
+    --lichtblauw: #d9f1fb;
+    --grijs: #757575;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}

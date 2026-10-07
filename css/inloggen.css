@@ -1,11 +1,3 @@
-:root {
-    --hu-blauw: #00a1e1;
-    --hu-blauw-donker: #0088c8;
-    --hu-rood: #e6302b;
-    --hu-oranje: #e9650d;
-    --grijs: #757575;
-}
-
 body {
     margin: 0;
     font-family: Arial, sans-serif;
