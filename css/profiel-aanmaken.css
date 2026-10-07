@@ -1,0 +1,189 @@
+:root {
+    --hu-blauw: #00a1e1;
+    --hu-blauw-donker: #0088c8;
+    --hu-rood: #e6302b;
+    --hu-oranje: #e9650d;
+    --hu-groen: #a6ce39;
+    --lichtblauw: #d9f1fb;
+    --grijs: #757575;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: black;
+    background-color: var(--hu-rood);
+}
+
+input,
+select,
+button {
+    font-family: inherit;
+}
+
+.balk {
+    position: sticky;
+    top: 0;
+    padding: 15px 30px;
+    background-color: white;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--hu-blauw);
+}
+
+.balk span {
+    color: var(--hu-rood);
+}
+
+.label {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 4px 8px;
+    font-size: 15px;
+    color: white;
+    background-color: var(--hu-blauw);
+}
+
+.kaart {
+    max-width: 560px;
+    margin: 16px auto;
+    padding: 24px 30px;
+    background-color: white;
+    border-radius: 8px;
+}
+
+h1 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 36px;
+    font-weight: 900;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid var(--grijs);
+    border-radius: 4px;
+}
+
+input:focus {
+    outline: 2px solid var(--hu-oranje);
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--grijs);
+    border-radius: 4px;
+    background-color: white;
+}
+
+select:focus {
+    outline: 2px solid var(--hu-oranje);
+}
+
+.naast {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.naast div {
+    flex: 1;
+    min-width: 200px;
+}
+
+.rij {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.keuze {
+    display: inline;
+    font-weight: normal;
+    margin: 0;
+}
+
+.keuze input {
+    width: auto;
+}
+
+.stip {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.rood {
+    background-color: var(--hu-rood);
+}
+
+.blauw {
+    background-color: var(--hu-blauw);
+}
+
+.groen {
+    background-color: var(--hu-groen);
+}
+
+.knopje {
+    display: inline-block;
+    margin: 0;
+    padding: 6px 14px;
+    background-color: white;
+    border: 1px solid var(--hu-blauw);
+    border-radius: 999px;
+    color: var(--hu-blauw);
+    cursor: pointer;
+}
+
+.knopje:hover {
+    background-color: var(--lichtblauw);
+}
+
+.knopje input {
+    display: none;
+}
+
+.knopje:has(input:checked) {
+    background-color: var(--hu-blauw);
+    color: white;
+}
+
+.start {
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    background-color: var(--hu-blauw);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.start:hover {
+    background-color: var(--hu-blauw-donker);
+}
+
+.onderaan {
+    margin-bottom: 0;
+    text-align: center;
+    font-size: 14px;
+}
+
+a {
+    color: var(--hu-blauw);
+    font-weight: bold;
+}
