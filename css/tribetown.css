@@ -284,19 +284,26 @@ h1 {
 }
 
 .share-button {
-  display: flex;
-  width: 100%;
-  min-height: 38px;
+ display: flex;
+  min-height: 34px;
+  min-width: 100%;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  margin-top: 4px;
+  gap: 5px;
+  padding: 8px 6px;
+  border: none;
   border-radius: var(--border-radius-round);
-  background: var(--color-blue);
+  background-color: var(--color-blue);
   color: var(--color-white);
+  font: inherit;
   font-size: 13px;
   font-weight: bold;
+  cursor: pointer;
 }
-
+.share-button:hover {
+  background-color: var(--hu-rood);
+}
 .connections {
   padding-top: 18px;
   border-top: 1px solid var(--color-border);
