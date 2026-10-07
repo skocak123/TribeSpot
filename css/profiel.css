@@ -1,0 +1,15 @@
+:root {
+    --hu-blauw: #00a1e1;
+    --hu-blauw-donker: #0088c8;
+    --hu-rood: #e6302b;
+    --hu-oranje: #e9650d;
+    --grijs: #757575;
+}
+
+.profiel{
+    border: 1px solid var(--hu-blauw);
+    border-radius: 5px; 
+    padding: 20px;
+    background-color:#ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
