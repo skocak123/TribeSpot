@@ -41,17 +41,19 @@ nav li{
     
 }
 nav a{
-    height: 100%;
-    padding: 0 30px;
+    height: 90%;
+    padding: 0 35px;
     text-decoration: none;
     display: flex;
     align-items: center;
-    color: #1a1a1a; 
+    background-color: var(--hu-blauw);
+    color: white; 
+    border-radius: 600px;
+    front-weight: bold;
 }
 nav a:hover{
-     background-color: var(--hu-blauw);
-    color: #E6F4F2;
-    border-radius: 30px;
+     background-color: var(--hu-rood);
+    
 }
 .balk {
    

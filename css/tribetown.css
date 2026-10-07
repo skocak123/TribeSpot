@@ -100,9 +100,12 @@ h1 {
   background-position: right 12px center;
   color: var(--color-white);
   font: inherit;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: bold;
   cursor: pointer;
+}
+.blue-select:hover {
+  background-color: var(--hu-rood);
 }
 
 .blue-select:focus-visible {
