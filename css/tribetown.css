@@ -88,6 +88,37 @@ h1 {
   font-size: 13px;
 }
 
+.blue-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 8px 32px 8px 14px;
+  border: none;
+  border-radius: var(--border-radius-round);
+  background-color: var(--color-blue);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  color: var(--color-white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.blue-select:focus-visible {
+  outline: 2px solid var(--color-black);
+  outline-offset: 2px;
+}
+
+.blue-select option {
+  background: var(--color-white);
+  color: var(--color-text);
+}
+
+.field-box .blue-select {
+  margin-left: 8px;
+}
+
 .map {
   display: grid;
   flex: 1;
@@ -128,9 +159,8 @@ h1 {
 
 .student-dot {
   position: absolute;
-  width: 15px;
-  height: 15px;
-  border: 2px solid var(--color-white);
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   box-shadow: 0 1px 4px #0003;
 }
@@ -147,19 +177,19 @@ h1 {
 .red { background: var(--color-red); }
 .green { background: var(--color-green); }
 
-.dot-amir { top: 20%; left: 20%; }
-.dot-selim { top: 34%; left: 68%; }
-.dot-noor { top: 62%; left: 38%; }
-.dot-daan { top: 31%; left: 37%; }
-.dot-yara { top: 64%; left: 53%; }
-.dot-luuk { top: 32%; left: 34%; }
-.dot-lina { top: 22%; left: 24%; }
-.dot-adam { top: 53%; left: 57%; }
-.dot-sara { top: 14%; left: 14%; }
-.dot-mila { top: 68%; left: 28%; }
-.dot-finn { top: 74%; left: 84%; }
-.dot-emma { top: 25%; left: 72%; }
-.dot-jay { top: 58%; left: 40%; }
+.dot-1 { top: 20%; left: 20%; }
+.dot-2 { top: 34%; left: 68%; }
+.dot-3 { top: 62%; left: 38%; }
+.dot-4 { top: 31%; left: 37%; }
+.dot-5 { top: 64%; left: 53%; }
+.dot-6 { top: 32%; left: 34%; }
+.dot-7 { top: 22%; left: 24%; }
+.dot-8 { top: 53%; left: 57%; }
+.dot-9 { top: 14%; left: 14%; }
+.dot-10 { top: 68%; left: 28%; }
+.dot-11 { top: 74%; left: 84%; }
+.dot-12 { top: 25%; left: 72%; }
+.dot-13 { top: 58%; left: 40%; }
 
 .side-panel {
   display: flex;
@@ -174,13 +204,13 @@ h1 {
 }
 
 .field-box {
-  min-height: 42px;
+  min-height: 45px;
   margin-bottom: 9px;
   padding: 12px 10px;
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-l);
-  color: var(--color-grey);
-  font-size: 13px;
+  color: var(--color-blue);
+  font-size: 15px;
 }
 
 .status-buttons {
