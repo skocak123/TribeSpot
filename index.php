@@ -15,7 +15,7 @@
   <nav>
     <header class="balk">Tribe<span>Spot</span></header>
     <ul>
-      <li><a href="index.html">Plattegrond</a></li>
+      <li><a href="index.php">Plattegrond</a></li>
       <li><a href="#">Chat</a></li>
       <li><a href="#">Kamers</a></li>
       <li><a href="#">Profiel</a></li>
@@ -83,18 +83,18 @@
       <section>
         <p class="small-heading">JOUW PLEK</p>
         <h2>Ik zit hier</h2>
-
-        <div class="field-box">lokaal:<input type="text"></div>
-        <div class="field-box">ik werk aan:<input type="text"></div>
+      <form method="POST">
+        <div class="field-box">lokaal:<input type="text" name="lokaal"></div>
+        <div class="field-box">ik werk aan:<input type="text" name="status"></div>
 
         <div class="status-buttons">
-          <button class="status-button"><span class="status-dot green"></span>Aanschuiven</button>
-          <button class="status-button"><span class="status-dot yellow"></span>Vragen</button>
-          <button class="status-button"><span class="status-dot red"></span>Focus</button>
+          <button type="button" class="status-button"><span class="status-dot green"></span>Aanschuiven</button>
+          <button type="button" class="status-button"><span class="status-dot yellow"></span>Vragen</button>
+          <button type="button" class="status-button"><span class="status-dot red"></span>Focus</button>
         </div>
 
         <div class="field-box" >Ik ben hier tot:
-             <select class="blue-select" aria-label="Kies een tijd">
+             <select class="blue-select" name="tijd" aria-label="Kies een tijd">
             <option>Kies een tijd</option>
             <option>10:00</option>
             <option>11:00</option>
@@ -106,8 +106,16 @@
           <option>17:00</option>
         </select></div>
         <button class="share-button">Deel mijn status</button>
+        </form>
+        <?php
+      if (isset($_POST['lokaal'])) {
+          $lokaal = htmlspecialchars($_POST['lokaal']);
+          $status = htmlspecialchars($_POST['status']);
+          $tijd = htmlspecialchars($_POST['tijd']);
+          echo "<p class='status-melding'>je zit in ".$lokaal." en je werkt aan ".$status." tot ".$tijd.", je status is gedeeld!</p>";
+      } 
+      ?>
       </section>
-
       <section class="connections">
         <p class="small-heading">TRIBES OM JE HEEN</p>
         <div class="connections-heading">
