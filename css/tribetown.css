@@ -193,7 +193,6 @@ h1 {
   padding-top: 4px;
 }
 
-/* projectruimte */
 .project {
   flex-direction: row;
   flex-wrap: wrap;
@@ -307,6 +306,13 @@ h1 {
 
 .status-button:hover {
   background-color: var(--hu-rood);
+}
+
+/* de status die je gekozen hebt */
+.status-button.chosen {
+  background-color: var(--hu-rood);
+  outline: 2px solid black;
+  outline-offset: 2px;
 }
 
 .status-button:focus-visible {
@@ -423,4 +429,54 @@ h1 {
   .room-six {
     border-right: 0;
   }
+  }
+
+.student-card {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  overflow: visible;
+  transform: translate(-50%, calc(-100% - 12px));
+  min-width: 200px;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: var(--border-radius-l);
+  box-shadow: 0 4px 20px #0003;
 }
+
+.student-card::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: white;
+}
+
+.student-card h3 {
+  margin-bottom: 10px;
+}
+
+.student-card p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.close-button {
+  margin-top: 10px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: var(--border-radius-round);
+  background: var(--hu-blauw);
+  color: white;
+  cursor: pointer;
+}
+
+
+
+
+
+
