@@ -177,7 +177,6 @@ h1 {
   border-bottom: 0;
 }
 
-/* klaslokaal */
 .board {
   width: 60%;
   height: 6px;
@@ -211,7 +210,6 @@ h1 {
   background: #e8dcc8;
 }
 
-/* computerlokaal */
 .pc-row {
   display: flex;
   justify-content: space-around;
@@ -224,7 +222,6 @@ h1 {
   background: #eee;
 }
 
-/* stoelen: leeg = stippellijn, bezet = statuskleur */
 .seat {
   display: block;
   width: 18px;
@@ -243,7 +240,6 @@ h1 {
   cursor: pointer;
 }
 
-/* tafel met iemand die aanschuiven aan heeft krijgt een groene rand */
 .desk-row:has(.green),
 .group:has(.green),
 .pc-row:has(.green) {
