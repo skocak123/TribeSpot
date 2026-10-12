@@ -147,7 +147,12 @@ h1 {
 
 .room {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
   min-width: 0;
+  padding: 40px 14px 14px;
   border-right: 2px solid var(--hu-blauw);
   border-bottom: 2px solid var(--hu-blauw);
 }
@@ -172,12 +177,77 @@ h1 {
   border-bottom: 0;
 }
 
-.student-dot {
-  position: absolute;
-  width: 10px;
-  height: 10px;
+/* klaslokaal */
+.board {
+  width: 60%;
+  height: 6px;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: var(--grijs);
+}
+
+.desk-row {
+  display: flex;
+  justify-content: space-around;
+  border-top: 12px solid #e8dcc8;
+  border-radius: 4px;
+  padding-top: 4px;
+}
+
+/* projectruimte */
+.project {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #e8dcc8;
+}
+
+/* computerlokaal */
+.pc-row {
+  display: flex;
+  justify-content: space-around;
+}
+
+.pc {
+  padding: 4px;
+  border-top: 6px solid var(--grijs);
+  border-radius: 4px;
+  background: #eee;
+}
+
+/* stoelen: leeg = stippellijn, bezet = statuskleur */
+.seat {
+  display: block;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 2px dashed var(--rand);
   border-radius: 50%;
-  box-shadow: 0 1px 4px #0003;
+  background: white;
+}
+
+.seat.green,
+.seat.yellow,
+.seat.red {
+  border: 2px solid white;
+  box-shadow: 0 1px 4px #0004;
+  cursor: pointer;
+}
+
+/* tafel met iemand die aanschuiven aan heeft krijgt een groene rand */
+.desk-row:has(.green),
+.group:has(.green),
+.pc-row:has(.green) {
+  box-shadow: 0 0 0 3px var(--hu-groen);
 }
 
 .status-dot {
@@ -192,20 +262,6 @@ h1 {
 .blue { background: var(--geel); }
 .red { background: var(--hu-rood); }
 .green { background: var(--hu-groen); }
-
-.dot-1 { top: 20%; left: 20%; }
-.dot-2 { top: 34%; left: 68%; }
-.dot-3 { top: 62%; left: 38%; }
-.dot-4 { top: 31%; left: 37%; }
-.dot-5 { top: 64%; left: 53%; }
-.dot-6 { top: 32%; left: 34%; }
-.dot-7 { top: 22%; left: 24%; }
-.dot-8 { top: 53%; left: 57%; }
-.dot-9 { top: 14%; left: 14%; }
-.dot-10 { top: 68%; left: 28%; }
-.dot-11 { top: 74%; left: 84%; }
-.dot-12 { top: 25%; left: 72%; }
-.dot-13 { top: 58%; left: 40%; }
 
 .side-panel {
   display: flex;
