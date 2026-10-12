@@ -189,7 +189,7 @@ h1 {
 }
 
 .yellow { background: var(--geel); }
-.blue { background: var(--hu-blauw); }
+.blue { background: var(--geel); }
 .red { background: var(--hu-rood); }
 .green { background: var(--hu-groen); }
 
