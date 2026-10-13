@@ -32,7 +32,7 @@ const allSeats = document.querySelectorAll(".seat");
 for (let i = 0; i < allSeats.length; i++) {
   allSeats[i].addEventListener("click", function () {
     const seat = allSeats[i];
-    if (!seat.dataset.name) return; // lege stoel
+    if (!seat.dataset.name) return;
 
     const color = seat.classList[1];
 
