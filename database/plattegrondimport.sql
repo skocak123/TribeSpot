@@ -33,9 +33,12 @@ CREATE TABLE statussen (
     werkt_aan VARCHAR(255),
     beschikbaarheid varchar(20),
     tot TIME,
+    plek INT NOT NULL,
     gedeeld_op DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (gebruiker_id) REFERENCES gebruikers(id),
-    FOREIGN KEY (lokaal_id) REFERENCES lokalen(id)
+    FOREIGN KEY (lokaal_id) REFERENCES lokalen(id),
+    UNIQUE (gebruiker_id),
+    UNIQUE (lokaal_id, plek)
 );
 
 INSERT INTO gebruikers (naam) VALUES ('sanne');
@@ -44,6 +47,7 @@ INSERT INTO gebruikers (naam) VALUES ('lisa');
 INSERT INTO gebruikers (naam) VALUES ('daan');
 INSERT INTO gebruikers (naam) VALUES ('yara');
 INSERT INTO gebruikers (naam) VALUES ('ahmed');
+INSERT INTO gebruikers (naam) VALUES ('selim');
 
 INSERT INTO lokalen (naam, verdieping) VALUES
 ('Kantine', 0),
@@ -86,8 +90,8 @@ INSERT INTO lokalen (naam, verdieping) VALUES
 ('Lokaal 4.06', 4);
 
 
-INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot) VALUES (1, 13, 'Plattegrond', 'aanschuiven', '15:00');
-INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot) VALUES (2, 13, 'Python opdracht', 'focus', '12:00');
-INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot) VALUES (3, 14, 'Database', 'vragen', '16:00');
-INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot) VALUES (4, 15, 'Webdevelopment', 'aanschuiven', '14:00');
+INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot, plek) VALUES (1, 13, 'Plattegrond', 'aanschuiven', '15:00', 2);
+INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot, plek) VALUES (2, 13, 'Python opdracht', 'focus', '12:00', 5);
+INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot, plek) VALUES (3, 14, 'Database', 'vragen', '16:00', 3);
+INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot, plek) VALUES (4, 15, 'Webdevelopment', 'aanschuiven', '14:00', 1);
 

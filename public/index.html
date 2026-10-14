@@ -152,6 +152,7 @@
         <p><span class="status-dot card-dot"></span> <span class="card-status"></span></p>
         <p>Werkt aan: <span class="card-work"></span></p>
         <p>Hier tot: <span class="card-until"></span></p>
+        <button class="close-button join-button">Aanschuiven</button>
         <button class="close-button" popovertarget="student-card" popovertargetaction="hide">Sluiten</button>
       </div>
     </section>
@@ -161,7 +162,7 @@
         <p class="small-heading">JOUW PLEK</p>
         <h2>Ik zit hier</h2>
 
-        <div class="field-box">lokaal:<input type="text" class="my-room" placeholder="bijv. 2.01"></div>
+        <div class="field-box">lokaal:<input type="text" class="my-room" placeholder="klik op een stoel" readonly></div>
         <div class="field-box">ik werk aan:<input type="text" class="my-work"></div>
 
         <div class="status-buttons">
@@ -183,6 +184,7 @@
           <option>17:00</option>
         </select></div>
         <button class="share-button">Deel mijn status</button>
+        <button class="share-button leave-button">Ik ga weg</button>
       </section>
 
       <section class="connections">
@@ -195,7 +197,9 @@
         <div>
           <strong>Online nu</strong> <strong class="online-count">5</strong>
         </div>
-    
+        <ul class="online-list"></ul>
+        <strong>Offline</strong>
+        <ul class="offline-list"></ul>
       </section>
     </aside>
   </main>
