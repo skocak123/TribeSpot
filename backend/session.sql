@@ -4,6 +4,8 @@ CREATE TABLE Users(
     id INT PRIMARY KEY AUTO_INCREMENT,
     naam VARCHAR(255),
     gebruikersnaam VARCHAR(255),
-    HUemail VARCHAR(255),
     wachtwoord VARCHAR(255)
 );
+--@block
+SELECT naam, gebruikersnaam FROM Users;
+
