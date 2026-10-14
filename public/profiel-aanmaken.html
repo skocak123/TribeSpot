@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profiel aanmaken - TribeSpot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/profiel-aanmaken.css">
+</head>
+<body>
+    <header class="balk">Tribe<span>Spot</span></header>
+
+    <div class="kaart">
+        <span class="label">Account aanmaken</span>
+        <h1>Welkom!</h1>
+        <p>Maak je profiel aan en vind andere studenten op de plattegrond.</p>
+
+    <form id="registreerformulier">
+        <div class="naast">
+            <div>
+                <label for="naam">Naam</label>
+                <input type="text" id="naam" name="naam" placeholder="Je naam" required>
+            </div>
+            <div>
+                <label for="gebruikersnaam">Gebruikersnaam</label>
+                <input type="text" id="gebruikersnaam" name="gebruikersnaam" placeholder="Zo zien anderen jou" required>
+            </div>
+        </div>
+
+        <div class="naast">
+            <div>
+                <label>HU-e-mailadres</label>
+                <input type="email" id="email" name="email" placeholder="naam@student.hu.nl" required>
+            </div>
+            <div>
+                <label>Wachtwoord</label>
+                <input type="password" id="wachtwoord" name="wachtwoord" placeholder="Kies een wachtwoord" minlength="8" required>
+            </div>
+        </div>
+
+        <label for="studiejaar">Studiejaar</label>
+        <select id="studiejaar" name="studiejaar">
+            <option value="1">Jaar 1</option>
+            <option value="2">Jaar 2</option>
+            <option value="3">Jaar 3</option>
+            <option value="4">Jaar 4</option>
+        </select>
+
+        <label>Tribe</label>
+        <div class="rij">
+            <label class="keuze"><input type="radio" name="tribe" value="A" required><span class="stip rood"></span> Tribe A</label>
+            <label class="keuze"><input type="radio" name="tribe" value="B"><span class="stip blauw"></span> Tribe B</label>
+            <label class="keuze"><input type="radio" name="tribe" value="C"><span class="stip groen"></span> Tribe C</label>
+        </div>
+
+        <label>Interesses</label>
+        <div class="rij">
+            <label class="knopje"><input type="checkbox" name="interesses" value="Games"> Games</label>
+            <label class="knopje"><input type="checkbox" name="interesses" value="Muziek"> Muziek</label>
+            <label class="knopje"><input type="checkbox" name="interesses" value="Sport"> Sport</label>
+            <label class="knopje"><input type="checkbox" name="interesses" value="Design"> Design</label>
+            <label class="knopje"><input type="checkbox" name="interesses" value="Code"> Code</label>
+        </div>
+
+        <label for="helpen">Ik kan helpen met</label>
+        <input type="text" id="helpen" name="helpen" placeholder="Bijv. HTML, CSS of Python">
+ 
+        <p id="foutmelding" class="foutmelding" hidden></p>
+
+        <button type="submit" class="start">Start</button>
+    </form>
+
+        <p class="onderaan">Al een profiel? <a href="inloggen.html">Log in</a></p>
+    </div>
+    
+    <script src="js/registreren.js"></script>
+</body>
+</html>

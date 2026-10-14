@@ -15,17 +15,24 @@
         <h1>Welkom terug!</h1>
         <p>Log in en vind andere studenten op de plattegrond.</p>
 
-        <label>HU-e-mailadres</label>
-        <input type="email" placeholder="naam@student.hu.nl">
+     <form id="inlogformulier">
 
-        <label>Wachtwoord</label>
-        <input type="password" placeholder="Je wachtwoord">
+        <label for="email">HU-e-mailadres</label>
+        <input type="email" id="email" name="email" placeholder="naam@student.hu.nl" required>
 
+        <label for="wachtwoord">Wachtwoord</label>
+        <input type="password" id="wachtwoord" name="wachtwoord" placeholder="Je wachtwoord" required>
+
+        <p id="foutmelding" class="foutmelding" hidden></p>
+       
         <a href="#" class="vergeten">Wachtwoord vergeten?</a>
 
-        <button class="start">Inloggen</button>
+        <button type="submit" class="start">Inloggen</button>
+
+    </form>
 
         <p class="onderaan">Nog geen profiel? <a href="profiel-aanmaken.html">Maak er een aan</a></p>
     </div>
+    <script src="js/inloggen.js"></script>
 </body>
 </html>
