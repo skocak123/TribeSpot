@@ -229,6 +229,16 @@ h1 {
   border: 2px dashed var(--rand);
   border-radius: 50%;
   background: white;
+  cursor: pointer;
+}
+
+.seat:hover,
+.seat.chosen-seat {
+  border: 2px solid var(--hu-blauw);
+}
+
+.seat.chosen-seat {
+  background: var(--hu-blauw);
 }
 
 .seat.green,
@@ -320,6 +330,12 @@ h1 {
   outline-offset: 2px;
 }
 
+.status-button:disabled {
+  background-color: var(--rand);
+  color: var(--grijs);
+  cursor: not-allowed;
+}
+
 .status-button .status-dot {
   border: 1.5px solid white;
 }
@@ -344,6 +360,16 @@ h1 {
 }
 .share-button:hover {
   background-color: var(--hu-rood);
+}
+.leave-button {
+  margin-top: 8px;
+  border: 1px solid var(--hu-blauw);
+  background-color: white;
+  color: var(--hu-blauw);
+}
+.leave-button:hover {
+  border-color: var(--hu-rood);
+  color: white;
 }
 .connections {
   padding-top: 18px;
@@ -475,8 +501,13 @@ h1 {
   cursor: pointer;
 }
 
+.join-button {
+  margin-right: 6px;
+  background: var(--hu-groen);
+}
 
-
-
-
-
+.online-list,
+.offline-list {
+  margin: 6px 0 12px;
+  padding-left: 20px;
+}

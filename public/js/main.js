@@ -21,43 +21,164 @@ function showFloor(floor) {
 }
 floorMenu.addEventListener("change", function () {
   showFloor(Number(floorMenu.value));
+  loadStatuses();
 });
 showFloor(Number(floorMenu.value));
 
 const statusNames = { green: "Aanschuiven", yellow: "Vragen", red: "Focus" };
+const statusWords = { green: "aanschuiven", yellow: "vragen", red: "focus" };
+const statusColors = { aanschuiven: "green", vragen: "yellow", focus: "red" };
 
 const card = document.querySelector("#student-card");
+const joinButton = document.querySelector(".join-button");
+const rooms = document.querySelectorAll(".map .room");
 const allSeats = document.querySelectorAll(".seat");
-
-for (let i = 0; i < allSeats.length; i++) {
-  allSeats[i].addEventListener("click", function () {
-    const seat = allSeats[i];
-    if (!seat.dataset.name) return;
-
-    const color = seat.classList[1];
-
-    card.querySelector(".card-name").textContent = seat.dataset.name;
-    card.querySelector(".card-dot").className = "status-dot card-dot " + color;
-    card.querySelector(".card-status").textContent = statusNames[color];
-    card.querySelector(".card-work").textContent = seat.dataset.work;
-    card.querySelector(".card-until").textContent = seat.dataset.until;
-
-    const seatBox = seat.getBoundingClientRect();
-    card.style.left = seatBox.left + seatBox.width / 2 + "px";
-    card.style.top = seatBox.top + "px";
-
-    card.showPopover();
-  });
-}
+const onlineCount = document.querySelector(".online-count");
 
 const roomInput = document.querySelector(".my-room");
 const workInput = document.querySelector(".my-work");
 const timeSelect = document.querySelector(".my-time");
 const statusButtons = document.querySelectorAll(".status-button");
 const shareButton = document.querySelector(".share-button");
+const leaveButton = document.querySelector(".leave-button");
+
+const myName = "selim";
 
 let chosenStatus = "";
-let mySeat = null;
+let chosenSeat = null;
+let cardSeat = null;
+
+function clearChosenSeat() {
+  if (chosenSeat !== null) {
+    chosenSeat.classList.remove("chosen-seat");
+  }
+  chosenSeat = null;
+  roomInput.value = "";
+  lockStatus(false);
+}
+
+function tableHasJoiner(seat) {
+  const tableSeats = seat.closest(".desk-row, .group, .pc-row").querySelectorAll(".seat");
+  for (let i = 0; i < tableSeats.length; i++) {
+    if (tableSeats[i].classList.contains("green") && tableSeats[i].dataset.name !== myName) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function lockStatus(locked) {
+  for (let i = 0; i < statusButtons.length; i++) {
+    const isGreen = statusButtons[i].dataset.status === "green";
+    statusButtons[i].disabled = locked && !isGreen;
+
+    if (locked) {
+      statusButtons[i].classList.toggle("chosen", isGreen);
+    }
+  }
+  if (locked) {
+    chosenStatus = "green";
+  }
+}
+
+function showCard(seat) {
+  const color = seat.classList[1];
+
+  card.querySelector(".card-name").textContent = seat.dataset.name;
+  card.querySelector(".card-dot").className = "status-dot card-dot " + color;
+  card.querySelector(".card-status").textContent = statusNames[color];
+  card.querySelector(".card-work").textContent = seat.dataset.work;
+  card.querySelector(".card-until").textContent = seat.dataset.until;
+  joinButton.hidden = color !== "green" || seat.dataset.name === myName;
+  cardSeat = seat;
+
+  const seatBox = seat.getBoundingClientRect();
+  card.style.left = seatBox.left + seatBox.width / 2 + "px";
+  card.style.top = seatBox.top + "px";
+
+  card.showPopover();
+}
+
+for (let i = 0; i < allSeats.length; i++) {
+  allSeats[i].addEventListener("click", function () {
+    const seat = allSeats[i];
+
+    if (seat.dataset.name) {
+      showCard(seat);
+      return;
+    }
+
+    clearChosenSeat();
+    seat.classList.add("chosen-seat");
+    chosenSeat = seat;
+    roomInput.value = seat.closest(".room").querySelector("h2").textContent;
+    lockStatus(tableHasJoiner(seat));
+  });
+}
+
+function emptyAllSeats() {
+  for (let i = 0; i < allSeats.length; i++) {
+    allSeats[i].className = "seat";
+    delete allSeats[i].dataset.name;
+    delete allSeats[i].dataset.work;
+    delete allSeats[i].dataset.until;
+  }
+}
+
+function loadStatuses() {
+  fetch("/api/statussen")
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (statuses) {
+      clearChosenSeat();
+      emptyAllSeats();
+
+      for (let i = 0; i < statuses.length; i++) {
+        const status = statuses[i];
+        if (status.verdieping !== Number(floorMenu.value)) continue;
+
+        for (let j = 0; j < rooms.length; j++) {
+          if (rooms[j].querySelector("h2").textContent !== status.lokaal) continue;
+
+          const seat = rooms[j].querySelectorAll(".seat")[status.plek - 1];
+          if (!seat) continue;
+
+          seat.className = "seat " + statusColors[status.beschikbaarheid];
+          seat.dataset.name = status.naam;
+          seat.dataset.work = status.werkt_aan;
+          seat.dataset.until = status.tot;
+        }
+      }
+    })
+    .catch(function () {
+      alert("Kan de statussen niet ophalen. Draait de server?");
+    });
+}
+
+function fillList(list, users) {
+  list.innerHTML = "";
+  for (let i = 0; i < users.length; i++) {
+    const li = document.createElement("li");
+    li.textContent = users[i].naam;
+    list.appendChild(li);
+  }
+}
+
+function loadOnline() {
+  fetch("/api/online")
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (data) {
+      onlineCount.textContent = data.online.length;
+      fillList(document.querySelector(".online-list"), data.online);
+      fillList(document.querySelector(".offline-list"), data.offline);
+    });
+}
+
+loadStatuses();
+loadOnline();
 
 for (let i = 0; i < statusButtons.length; i++) {
   statusButtons[i].addEventListener("click", function () {
@@ -69,40 +190,90 @@ for (let i = 0; i < statusButtons.length; i++) {
   });
 }
 
+function sendStatus(seat, status, time) {
+  const room = seat.closest(".room");
+  const roomSeats = Array.from(room.querySelectorAll(".seat"));
+
+  fetch("/api/statussen", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      lokaal: room.querySelector("h2").textContent,
+      plek: roomSeats.indexOf(seat) + 1,
+      werkt_aan: workInput.value,
+      beschikbaarheid: statusWords[status],
+      tot: time,
+    }),
+  })
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (result) {
+      if (result.fout) {
+        alert(result.fout);
+      }
+      loadStatuses();
+      loadOnline();
+    });
+}
+
 shareButton.addEventListener("click", function () {
-  if (roomInput.value === "" || chosenStatus === "" || timeSelect.selectedIndex === 0) {
-    alert("Vul je lokaal in, kies een status en een tijd.");
+  if (chosenSeat === null || chosenStatus === "" || timeSelect.selectedIndex === 0) {
+    alert("Klik op een lege stoel, kies een status en een tijd.");
     return;
   }
+  sendStatus(chosenSeat, chosenStatus, timeSelect.value);
+});
 
-  const rooms = document.querySelectorAll(".map .room");
-  let room = null;
-  for (let i = 0; i < rooms.length; i++) {
-    const name = rooms[i].querySelector("h2").textContent.toLowerCase();
-    if (name.includes(roomInput.value.toLowerCase())) {
-      room = rooms[i];
+function findFreeSeat(seats, seat) {
+  const list = Array.from(seats);
+  const index = list.indexOf(seat);
+  let best = null;
+  let bestDistance = 0;
+
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].dataset.name) continue;
+
+    const distance = Math.abs(i - index);
+    if (best === null || distance < bestDistance) {
+      best = list[i];
+      bestDistance = distance;
     }
   }
+  return best;
+}
 
-  if (room === null) {
-    alert("Dat lokaal staat niet op deze verdieping.");
-    return;
-  }
+joinButton.addEventListener("click", function () {
+  card.hidePopover();
 
-  if (mySeat !== null) {
-    mySeat.className = "seat";
-    delete mySeat.dataset.name;
-  }
-
-  const freeSeat = room.querySelector(".seat:not(.green):not(.yellow):not(.red)");
+  const table = cardSeat.closest(".desk-row, .group, .pc-row");
+  let freeSeat = findFreeSeat(table.querySelectorAll(".seat"), cardSeat);
   if (freeSeat === null) {
-    alert("Dit lokaal zit vol.");
+    freeSeat = findFreeSeat(cardSeat.closest(".room").querySelectorAll(".seat"), cardSeat);
+  }
+  if (freeSeat === null) {
+    alert("Er is geen plek meer vrij bij " + cardSeat.dataset.name + ".");
     return;
   }
 
-  freeSeat.className = "seat " + chosenStatus;
-  freeSeat.dataset.name = "Jij";
-  freeSeat.dataset.work = workInput.value;
-  freeSeat.dataset.until = timeSelect.value;
-  mySeat = freeSeat;
+  let time = timeSelect.value;
+  if (timeSelect.selectedIndex === 0) {
+    time = cardSeat.dataset.until;
+  }
+
+  sendStatus(freeSeat, "green", time);
 });
+
+leaveButton.addEventListener("click", function () {
+  fetch("/api/statussen", { method: "DELETE" }).then(function () {
+    loadStatuses();
+    loadOnline();
+  });
+});
+
+setInterval(function () {
+  if (chosenSeat === null) {
+    loadStatuses();
+    loadOnline();
+  }
+}, 60000);
