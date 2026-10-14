@@ -26,6 +26,7 @@ nav ul{
 }
 nav li{
     height: 50px;
+    padding: 5px;
     
 }
 nav a{
