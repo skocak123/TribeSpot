@@ -134,7 +134,7 @@ h1 {
   padding: 8px 15px;
   border: 1px solid var(--hu-blauw);
   border-radius: var(--border-radius-round);
-  color: var(--hu-rood);
+  color: black;
   font-size: 13px;
   margin-left: 0px;
   width: 100%;
