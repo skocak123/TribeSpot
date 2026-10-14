@@ -106,3 +106,11 @@ shareButton.addEventListener("click", function () {
   freeSeat.dataset.until = timeSelect.value;
   mySeat = freeSeat;
 });
+async function loadStatuses() {
+  const response = await fetch("/statussen");
+  const statuses = await response.json();
+  document.querySelector(".online-count").textContent = statuses.length;
+}
+
+loadStatuses();                     
+setInterval(loadStatuses, 5000);    
