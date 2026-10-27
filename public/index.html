@@ -41,41 +41,119 @@
       <div class="map">
         <section class="room room-one">
           <h2>Lokaal 2.01</h2>
-          <span class="student-dot blue dot-1" aria-label="Student 1"></span>
-          <span class="student-dot red dot-2" aria-label="Student 2"></span>
-          <span class="student-dot blue dot-1" aria-label="Student 3"></span>
-          <span class="student-dot green dot-3" aria-label="Student 4"></span>
+          <div class="board"></div>
+          <div class="desk-row">
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </div>
+          <div class="desk-row">
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </div>
+          <div class="desk-row">
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </div>
         </section>
 
-        <section class="room room-two">
+        <section class="room room-two project">
           <h2>Lokaal </h2>
-          <span class="student-dot red dot-4" aria-label="Student 5"></span>
-          <span class="student-dot blue dot-5" aria-label="Student 6"></span>
+          <div class="group">
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </div>
+          <div class="group">
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </div>
         </section>
 
         <section class="room room-three">
           <h2>Lokaal </h2>
-          <span class="student-dot blue dot-6" aria-label="Student 7"></span>
+          <div class="pc-row">
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+          </div>
+          <div class="pc-row">
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+          </div>
         </section>
 
-        <section class="room room-four">
+        <section class="room room-four project">
           <h2>Lokaal </h2>
-          <span class="student-dot red dot-7" aria-label="Student 8"></span>
-          <span class="student-dot red dot-8" aria-label="Student 9"></span>
+          <div class="group">
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </div>
+          <div class="group">
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </div>
         </section>
 
         <section class="room room-five">
           <h2>Lokaal </h2>
-          <span class="student-dot green dot-9" aria-label="Student 10"></span>
-          <span class="student-dot blue dot-10" aria-label="Student 11"></span>
-          <span class="student-dot red dot-11" aria-label="Student 12"></span>
+          <div class="board"></div>
+          <div class="desk-row">
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </div>
+          <div class="desk-row">
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+            <span class="seat"></span>
+          </div>
         </section>
 
         <section class="room room-six">
           <h2>Lokaal </h2>
-          <span class="student-dot green dot-12" aria-label="Student 13"></span>
-          <span class="student-dot red dot-13" aria-label="Student 14"></span>
+          <div class="pc-row">
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+          </div>
+          <div class="pc-row">
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+            <span class="pc"><span class="seat"></span></span>
+          </div>
         </section>
+      </div>
+
+      <div id="student-card" class="student-card" popover>
+        <h3 class="card-name"></h3>
+        <p><span class="status-dot card-dot"></span> <span class="card-status"></span></p>
+        <p>Werkt aan: <span class="card-work"></span></p>
+        <p>Hier tot: <span class="card-until"></span></p>
+        <button class="close-button join-button">Aanschuiven</button>
+        <button class="close-button" popovertarget="student-card" popovertargetaction="hide">Sluiten</button>
       </div>
     </section>
 
@@ -84,17 +162,17 @@
         <p class="small-heading">JOUW PLEK</p>
         <h2>Ik zit hier</h2>
 
-        <div class="field-box">lokaal:<input type="text"></div>
-        <div class="field-box">ik werk aan:<input type="text"></div>
+        <div class="field-box">lokaal:<input type="text" class="my-room" placeholder="klik op een stoel" readonly></div>
+        <div class="field-box">ik werk aan:<input type="text" class="my-work"></div>
 
         <div class="status-buttons">
-          <button class="status-button"><span class="status-dot green"></span>Aanschuiven</button>
-          <button class="status-button"><span class="status-dot yellow"></span>Vragen</button>
-          <button class="status-button"><span class="status-dot red"></span>Focus</button>
+          <button class="status-button" data-status="green"><span class="status-dot green"></span>Aanschuiven</button>
+          <button class="status-button" data-status="yellow"><span class="status-dot yellow"></span>Vragen</button>
+          <button class="status-button" data-status="red"><span class="status-dot red"></span>Focus</button>
         </div>
 
         <div class="field-box" >Ik ben hier tot:
-             <select class="blue-select" aria-label="Kies een tijd">
+             <select class="blue-select my-time" aria-label="Kies een tijd">
             <option>Kies een tijd</option>
             <option>10:00</option>
             <option>11:00</option>
@@ -106,6 +184,7 @@
           <option>17:00</option>
         </select></div>
         <button class="share-button">Deel mijn status</button>
+        <button class="share-button leave-button">Ik ga weg</button>
       </section>
 
       <section class="connections">
@@ -118,7 +197,9 @@
         <div>
           <strong>Online nu</strong> <strong class="online-count">5</strong>
         </div>
-    
+        <ul class="online-list"></ul>
+        <strong>Offline</strong>
+        <ul class="offline-list"></ul>
       </section>
     </aside>
   </main>

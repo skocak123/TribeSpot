@@ -27,7 +27,6 @@ body {
     color: var(--tekst);
 }
 
-
 .logo {
     background: #ffffff;
     padding: 16px 32px;
@@ -46,7 +45,6 @@ body {
     color: var(--hu-rood);
 }
 
-/* Witte kaart in het midden */
 main {
     padding: 48px 16px;
 }
@@ -70,7 +68,6 @@ main {
     font-size: 18px;
     line-height: 1.5;
 }
-
 
 label {
     display: block;
@@ -110,7 +107,6 @@ button:hover {
     background: var(--hu-blauw-donker);
 }
 
-
 #melding {
     margin-top: 24px;
     padding: 12px 16px;
@@ -119,12 +115,10 @@ button:hover {
     font-size: 16px;
 }
 
-
 .kaart a {
     color: var(--hu-blauw);
     font-weight: bold;
 }
-
 
 @media (max-width: 600px) {
     .kaart {

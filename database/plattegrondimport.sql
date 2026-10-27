@@ -1,23 +1,21 @@
--- notities voor als je niks begrijpt van SQL.
--- als je xampp controll panel open hebt en je apache en sql goed heb opgezet
--- druk in XAMPP bij Apache op Start
--- draait het goed? ja ga verder met deze stappenplan zo niet fix dat
--- druk bij MySQL op Admin. phpMyAdmin opent in je browser
--- druk boven bij die navbar op importeren en doe deze file erin
--- dan krijg je links bij die sidebar een tribespot database met deze gegevens hieronder 
--- en met Node.js (mysql2) maken we verbinding met de database 
-
-
 CREATE DATABASE IF NOT EXISTS tribespot CHARACTER SET utf8mb4;
 USE tribespot;
 
+DROP TABLE IF EXISTS wachtwoord_resets;
 DROP TABLE IF EXISTS statussen;
 DROP TABLE IF EXISTS gebruikers;
 DROP TABLE IF EXISTS lokalen;
 
 CREATE TABLE gebruikers (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    naam VARCHAR(100) NOT NULL
+    email VARCHAR(255) UNIQUE NOT NULL,
+    wachtwoord VARCHAR(255) NOT NULL,
+    naam VARCHAR(100) NOT NULL,
+    gebruikersnaam VARCHAR(50) UNIQUE NOT NULL,
+    studiejaar INT NOT NULL,
+    tribe VARCHAR(1) NOT NULL,
+    interesses VARCHAR(255) NOT NULL DEFAULT '',
+    helpen VARCHAR(200) NOT NULL DEFAULT ''
 );
 
 CREATE TABLE lokalen (
@@ -33,17 +31,21 @@ CREATE TABLE statussen (
     werkt_aan VARCHAR(255),
     beschikbaarheid varchar(20),
     tot TIME,
+    plek INT NOT NULL,
     gedeeld_op DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (gebruiker_id) REFERENCES gebruikers(id),
-    FOREIGN KEY (lokaal_id) REFERENCES lokalen(id)
+    FOREIGN KEY (gebruiker_id) REFERENCES gebruikers(id) ON DELETE CASCADE,
+    FOREIGN KEY (lokaal_id) REFERENCES lokalen(id),
+    UNIQUE (gebruiker_id),
+    UNIQUE (lokaal_id, plek)
 );
 
-INSERT INTO gebruikers (naam) VALUES ('sanne');
-INSERT INTO gebruikers (naam) VALUES ('mo');
-INSERT INTO gebruikers (naam) VALUES ('lisa');
-INSERT INTO gebruikers (naam) VALUES ('daan');
-INSERT INTO gebruikers (naam) VALUES ('yara');
-INSERT INTO gebruikers (naam) VALUES ('ahmed');
+CREATE TABLE wachtwoord_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    gebruiker_id INT NOT NULL,
+    token_hash VARCHAR(64) NOT NULL,
+    verloopt_op BIGINT NOT NULL,
+    FOREIGN KEY (gebruiker_id) REFERENCES gebruikers(id) ON DELETE CASCADE
+);
 
 INSERT INTO lokalen (naam, verdieping) VALUES
 ('Kantine', 0),
@@ -84,10 +86,3 @@ INSERT INTO lokalen (naam, verdieping) VALUES
 ('Lokaal 4.04', 4),
 ('Lokaal 4.05', 4),
 ('Lokaal 4.06', 4);
-
-
-INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot) VALUES (1, 13, 'Plattegrond', 'aanschuiven', '15:00');
-INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot) VALUES (2, 13, 'Python opdracht', 'focus', '12:00');
-INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot) VALUES (3, 14, 'Database', 'vragen', '16:00');
-INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot) VALUES (4, 15, 'Webdevelopment', 'aanschuiven', '14:00');
-
