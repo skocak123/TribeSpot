@@ -5,7 +5,7 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.blauw { 
+.blauw {
     color: #00a1e1;
 }
 
@@ -23,3 +23,48 @@ body {
     font-size: 29px;
     font-weight: bold;
 }
+
+main {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.kaart {
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 273px;
+}
+
+aside.kaart {
+    min-height: 550px;
+}
+
+
+
+
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #00a1e1;
+    margin: 0 auto;
+}
+
+.balk-buiten {
+    background-color: lightgray;
+    height: 12px;
+    border-radius: 6px;
+    margin: 15px 0;
+
+}
+

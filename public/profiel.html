@@ -1,26 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Profiel</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/tribetown.css">
-
+    <link rel="stylesheet" href="css/profiel.css">
 </head>
 
+<body>
     <nav>
         <header class="balk">Tribe<span>Spot</span></header>
         <ul>
-        <li><a href="index.html">Plattegrond</a></li>
-        <li><a href="chat.html">Chat</a></li>
-        <li><a href="kamer.html">Kamers</a></li>
-        <li><a href="profiel.html">Profiel</a></li>
+            <li><a href="index.html">Plattegrond</a></li>
+            <li><a href="chat.html">Chat</a></li>
+            <li><a href="kamer.html">Kamers</a></li>
+            <li><a href="profiel.html">Profiel</a></li>
         </ul>
     </nav>
 
-<body>
     <h1>Profiel</h1>
+
+    <main>
+        <aside class="kaart">
+            <div class="avatar" id="avatar"></div>
+            <h2 id="naam"></h2>
+            <p id="tribe"></p>
+            <div id="interesses"></div>
+        </aside>
+
+               <section>
+            <div class="kaart">
+                <h2>Mijn verbindingen</h2>
+                <p id="aantal-verbindingen"></p>
+                <p id="verbindingen-tekst"></p>
+
+                <div class="balk-buiten">
+                    <div class="balk-binnen" id="balk"></div>
+                </div>
+
+                <div id="stipjes"></div>
+            </div>
+
+            <div class="kaart">
+                <h2 id="badge-titel"></h2>
+                <p id="badge-tekst"></p>
+            </div>
+        </section>
+
+
+    </main>
 </body>
+
 </html>
