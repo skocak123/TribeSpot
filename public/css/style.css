@@ -18,3 +18,14 @@
 body {
     font-family: Helvetica, Arial, sans-serif;
 }
+
+.error-field,
+.field-box.error-field {
+    border-color: var(--hu-rood);
+}
+
+.error-message {
+    margin: 4px 0 9px;
+    font-size: 13px;
+    color: var(--hu-rood);
+}

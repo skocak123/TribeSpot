@@ -6,6 +6,7 @@
     <title>Profiel aanmaken - TribeSpot</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/profiel-aanmaken.css">
+    <script src="js/validatie.js" defer></script>
 </head>
 <body>
     <header class="balk">Tribe<span>Spot</span></header>
@@ -18,22 +19,22 @@
         <div class="naast">
             <div>
                 <label>Naam</label>
-                <input type="text" placeholder="Je naam">
+                <input type="text" class="profile-name" placeholder="Je naam">
             </div>
             <div>
                 <label>Gebruikersnaam</label>
-                <input type="text" placeholder="Zo zien anderen jou">
+                <input type="text" class="profile-username" placeholder="Zo zien anderen jou">
             </div>
         </div>
 
         <div class="naast">
             <div>
                 <label>HU-e-mailadres</label>
-                <input type="email" placeholder="naam@student.hu.nl">
+                <input type="email" class="profile-email" placeholder="naam@student.hu.nl">
             </div>
             <div>
                 <label>Wachtwoord</label>
-                <input type="password" placeholder="Kies een wachtwoord">
+                <input type="password" class="profile-password" placeholder="Kies een wachtwoord">
             </div>
         </div>
 
@@ -46,7 +47,7 @@
         </select>
 
         <label>Tribe</label>
-        <div class="rij">
+        <div class="rij tribe-row">
             <label class="keuze"><input type="radio" name="tribe"> <span class="stip rood"></span> Tribe A</label>
             <label class="keuze"><input type="radio" name="tribe"> <span class="stip blauw"></span> Tribe B</label>
             <label class="keuze"><input type="radio" name="tribe"> <span class="stip groen"></span> Tribe C</label>
@@ -62,9 +63,9 @@
         </div>
 
         <label>Ik kan helpen met</label>
-        <input type="text" placeholder="Bijv. HTML, CSS of Python">
+        <input type="text" class="profile-help" placeholder="Bijv. HTML, CSS of Python">
 
-        <button class="start">Start</button>
+        <button class="start profile-button">Start</button>
 
         <p class="onderaan">Al een profiel? <a href="inloggen.html">Log in</a></p>
     </div>

@@ -39,6 +39,10 @@ const roomInput = document.querySelector(".my-room");
 const workInput = document.querySelector(".my-work");
 const timeSelect = document.querySelector(".my-time");
 const statusButtons = document.querySelectorAll(".status-button");
+const statusBox = document.querySelector(".status-buttons");
+const roomBox = roomInput.closest(".field-box");
+const workBox = workInput.closest(".field-box");
+const timeBox = timeSelect.closest(".field-box");
 const shareButton = document.querySelector(".share-button");
 const leaveButton = document.querySelector(".leave-button");
 
@@ -78,6 +82,7 @@ function lockStatus(locked) {
   }
   if (locked) {
     chosenStatus = "green";
+    clearError(statusBox);
   }
 }
 
@@ -112,6 +117,7 @@ for (let i = 0; i < allSeats.length; i++) {
     seat.classList.add("chosen-seat");
     chosenSeat = seat;
     roomInput.value = seat.closest(".room").querySelector("h2").textContent;
+    clearError(roomBox);
     lockStatus(tableHasJoiner(seat));
   });
 }
@@ -187,6 +193,7 @@ for (let i = 0; i < statusButtons.length; i++) {
     }
     statusButtons[i].classList.add("chosen");
     chosenStatus = statusButtons[i].dataset.status;
+    clearError(statusBox);
   });
 }
 
@@ -217,12 +224,61 @@ function sendStatus(seat, status, time) {
     });
 }
 
-shareButton.addEventListener("click", function () {
-  if (chosenSeat === null || chosenStatus === "" || timeSelect.selectedIndex === 0) {
-    alert("Klik op een lege stoel, kies een status en een tijd.");
-    return;
+function checkSeat() {
+  if (chosenSeat === null) {
+    showError(roomBox, "Klik eerst op een lege stoel.");
+    return false;
   }
-  sendStatus(chosenSeat, chosenStatus, timeSelect.value);
+  clearError(roomBox);
+  return true;
+}
+
+function checkWork() {
+  if (workInput.value.trim() === "") {
+    showError(workBox, "Vul in waar je aan werkt.");
+    return false;
+  }
+  return checkLength(workInput, workBox, "omschrijving", 2, 100);
+}
+
+function checkStatus() {
+  if (chosenStatus === "") {
+    showError(statusBox, "Kies een status.");
+    return false;
+  }
+  clearError(statusBox);
+  return true;
+}
+
+function checkTime() {
+  if (timeSelect.selectedIndex === 0) {
+    showError(timeBox, "Kies een tijd.");
+    return false;
+  }
+
+  const parts = timeSelect.value.split(":");
+  const until = new Date();
+  until.setHours(Number(parts[0]), Number(parts[1]), 0, 0);
+  if (until <= new Date()) {
+    showError(timeBox, "Deze tijd is al voorbij.");
+    return false;
+  }
+  clearError(timeBox);
+  return true;
+}
+
+watchField(workInput, workBox, checkWork);
+timeSelect.addEventListener("change", checkTime);
+
+shareButton.addEventListener("click", function () {
+  const seatOk = checkSeat();
+  const workOk = checkWork();
+  const statusOk = checkStatus();
+  const timeOk = checkTime();
+
+  if (seatOk && workOk && statusOk && timeOk) {
+    sendStatus(chosenSeat, chosenStatus, timeSelect.value);
+  }
 });
 
 function findFreeSeat(seats, seat) {
