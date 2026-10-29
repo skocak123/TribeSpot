@@ -42,11 +42,11 @@ section {
     border: 1px solid black;
     border-radius: 12px;
     padding: 20px;
-    min-height: 273px;
+    min-height: min(273px, calc((100vh - 170px) / 2));
 }
 
 aside.kaart {
-    min-height: 550px;
+    min-height: min(550px, calc(100vh - 150px));
     text-align: center;
 }
 

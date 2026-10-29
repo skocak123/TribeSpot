@@ -57,3 +57,142 @@ nav a:hover{
 .balk span {
     color: var(--hu-rood);
 }
+.nav-profiel {
+    position: absolute;
+    right: 30px;
+}
+
+#nav-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--hu-blauw);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#nav-menu {
+    position: absolute;
+    right: 0;
+    top: 55px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 170px;
+}
+
+#nav-menu[hidden] {
+    display: none;
+}
+
+#nav-menu a,
+#nav-menu button {
+    height: auto;
+    padding: 8px 12px;
+    background: none;
+    color: black;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+}
+
+#nav-menu a:hover,
+#nav-menu button:hover {
+    background-color: #f0f0f0;
+}
+.nav-info {
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-info strong {
+    font-size: 15px;
+}
+
+.nav-info span {
+    font-size: 12px;
+    color: gray;
+}
+
+#nav-menu hr {
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 5px 0;
+}
+
+#vertrek-venster {
+    border: none;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 360px;
+    margin: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+#vertrek-venster::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+#vertrek-venster h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: var(--hu-blauw);
+}
+
+#vertrek-venster p {
+    margin: 0 0 14px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+#vertrek-venster label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+#vertrek-venster select {
+    margin-left: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--hu-blauw);
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+#vertrek-venster .vertrek-fout {
+    color: var(--hu-rood);
+    margin: 0;
+}
+
+.vertrek-knoppen {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.vertrek-knoppen button {
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 1px solid var(--hu-blauw);
+    background-color: white;
+    color: var(--hu-blauw);
+}
+
+.vertrek-knoppen .vertrek-verlengen {
+    background-color: var(--hu-blauw);
+    color: white;
+}

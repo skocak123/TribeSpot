@@ -285,8 +285,27 @@ app.post('/api/nieuw-wachtwoord', async (req, res) => {
   }
 });
 
+function tijdVanNu() {
+  const nu = new Date();
+  return String(nu.getHours()).padStart(2, '0') + ':' + String(nu.getMinutes()).padStart(2, '0');
+}
+
+function vandaagBegin() {
+  const nu = new Date();
+  return nu.getFullYear() + '-' + String(nu.getMonth() + 1).padStart(2, '0') + '-' +
+    String(nu.getDate()).padStart(2, '0') + ' 00:00:00';
+}
+
+// Statussen waarvan de "tot"-tijd voorbij is (of die van een eerdere dag zijn) weghalen
+async function verwijderVerlopenStatussen() {
+  await query('DELETE FROM statussen WHERE tot <= ? OR gedeeld_op < ?', [tijdVanNu(), vandaagBegin()]);
+}
+
+const geldigeTijd = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 app.get('/api/statussen', async (req, res) => {
   try {
+    await verwijderVerlopenStatussen();
     const rijen = await query(`SELECT gebruikers.naam, lokalen.naam AS lokaal, lokalen.verdieping, statussen.plek,
       statussen.werkt_aan, statussen.beschikbaarheid, statussen.tot
       FROM statussen
@@ -304,6 +323,7 @@ app.get('/api/statussen', async (req, res) => {
 
 app.get('/api/online', async (req, res) => {
   try {
+    await verwijderVerlopenStatussen();
     const online = await query('SELECT naam FROM gebruikers WHERE id IN (SELECT gebruiker_id FROM statussen) ORDER BY naam');
     const offline = await query('SELECT naam FROM gebruikers WHERE id NOT IN (SELECT gebruiker_id FROM statussen) ORDER BY naam');
     res.json({ online: online, offline: offline });
@@ -319,8 +339,12 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
   if (!lokaal || !plek || !beschikbaarheid || !tot) {
     return res.status(400).json({ fout: 'Niet alles is ingevuld.' });
   }
+  if (!geldigeTijd.test(tot) || tot <= tijdVanNu()) {
+    return res.status(400).json({ fout: 'Kies een tijd die later is dan nu.' });
+  }
 
   try {
+    await verwijderVerlopenStatussen();
     const lokalen = await query('SELECT id FROM lokalen WHERE naam = ?', [lokaal]);
     if (lokalen.length === 0) {
       return res.status(404).json({ fout: 'Dit lokaal bestaat niet.' });
@@ -349,6 +373,34 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
 app.delete('/api/statussen', alleenIngelogdApi, async (req, res) => {
   try {
     await query('DELETE FROM statussen WHERE gebruiker_id = ?', [req.session.gebruikerId]);
+    res.json({ gelukt: true });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
+  try {
+    await verwijderVerlopenStatussen();
+    const [status] = await query('SELECT tot FROM statussen WHERE gebruiker_id = ?', [req.session.gebruikerId]);
+    res.json(status ? { tot: String(status.tot).slice(0, 5) } : null);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
+  const { tot } = req.body;
+
+  if (!geldigeTijd.test(tot || '') || tot <= tijdVanNu()) {
+    return res.status(400).json({ fout: 'Kies een tijd die later is dan nu.' });
+  }
+
+  try {
+    const resultaat = await query('UPDATE statussen SET tot = ? WHERE gebruiker_id = ?', [tot, req.session.gebruikerId]);
+    if (resultaat.changes === 0) {
+      return res.status(404).json({ fout: 'Je hebt op dit moment geen plek.' });
+    }
     res.json({ gelukt: true });
   } catch (err) {
     databaseFout(res, err);
