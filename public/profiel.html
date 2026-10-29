@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="css/profiel.css">
 </head>
 
+</body>
+
 <body>
     <nav>
         <header class="balk">Tribe<span>Spot</span></header>
@@ -29,7 +31,15 @@
             <div class="avatar" id="avatar"></div>
             <h2 id="naam"></h2>
             <p id="tribe"></p>
+                        <h3>Interesses</h3>
             <div id="interesses"></div>
+
+            <h3>Kan helpen met</h3>
+            <div id="helpen"></div>
+
+                        <button id="bewerk-knop">Profiel bewerken</button>
+
+
         </aside>
 
                <section>
@@ -47,12 +57,55 @@
 
             <div class="kaart">
                 <h2 id="badge-titel"></h2>
-                <p id="badge-tekst"></p>
+                <p id="badge-tekst"></p> 
+                  <div id="kaart-logo">Tribe<span>Spot</span></div>
+
+                 <form id="bewerk-formulier" hidden>
+                <label>Naam
+                    <input type="text" id="invoer-naam">
+                </label>
+
+                <label>Studiejaar
+                    <select id="invoer-studiejaar">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </label>
+
+                <label>Tribe
+                    <select id="invoer-tribe">
+                        <option value="A">Tribe A</option>
+                        <option value="B">Tribe B</option>
+                        <option value="C">Tribe C</option>
+                    </select>
+                </label>
+
+                <div class="interesse-groep">
+                                    </div>
+
+                <p>Interesses</p>
+                <label class="vinkje"><input type="checkbox" name="interesse" value="Games"> Games</label>
+                <label class="vinkje"><input type="checkbox" name="interesse" value="Muziek"> Muziek</label>
+                <label class="vinkje"><input type="checkbox" name="interesse" value="Sport"> Sport</label>
+                <label class="vinkje"><input type="checkbox" name="interesse" value="Design"> Design</label>
+                <label class="vinkje"><input type="checkbox" name="interesse" value="Code"> Code</label>
+
+                <label>Kan helpen met
+                    <input type="text" id="invoer-helpen">
+                </label>
+
+                <p id="bewerk-melding"></p>
+                <button type="submit">Opslaan</button>
+            </form>
             </div>
         </section>
 
 
     </main>
+        <script src="js/profiel.js"></script>
+
 </body>
 
 </html>

@@ -47,6 +47,7 @@ section {
 
 aside.kaart {
     min-height: 550px;
+    text-align: center;
 }
 
 
@@ -57,8 +58,15 @@ aside.kaart {
     height: 100px;
     border-radius: 50%;
     background-color: #00a1e1;
-    margin: 0 auto;
+    margin: 0 auto 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    font-weight: bold;
+    color: white;
 }
+
 
 .balk-buiten {
     background-color: lightgray;
@@ -68,3 +76,124 @@ aside.kaart {
 
 }
 
+#tribe {
+    color: gray;
+    font-size: 14px;
+    margin-top: 5px;
+}
+aside h3 {
+    margin: 25px 0 10px;
+    font-size: 14px;
+    color: gray;
+}
+
+.label {
+    display: inline-block;
+    border: 1px solid black;
+    border-radius: 20px;
+    padding: 5px 12px;
+    margin: 3px;
+    font-size: 13px;
+}
+#bewerk-formulier label {
+    display: block;
+        margin: 0 0 10px;
+
+    text-align: left;
+}
+
+#bewerk-formulier label.vinkje {
+    display: inline-block;
+    border: 1px solid black;
+    border-radius: 20px;
+    padding: 5px 12px;
+    margin: 3px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+#bewerk-formulier label.vinkje input {
+    display: none;
+}
+
+#bewerk-formulier label.vinkje:has(input:checked) {
+    background-color: #00a1e1;
+    border-color: #00a1e1;
+    color: white;
+}
+
+
+
+#bewerk-formulier input[type="text"],
+#bewerk-formulier select {
+    display: block;
+    max-width: 300px;
+    border: 1px solid black;
+    border-radius: 20px;
+    padding: 6px 12px;
+    margin-top: 5px;
+    font-size: 13px;
+    background-color: white;
+}
+
+#bewerk-formulier input[type="text"]:focus,
+#bewerk-formulier select:focus {
+    outline: none;
+    border-color: #00a1e1;
+}
+
+
+#bewerk-knop,
+#bewerk-formulier button {
+    background-color: #00a1e1;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+#bewerk-knop:hover,
+#bewerk-formulier button:hover {
+    background-color: #0086bd;
+}
+
+#bewerk-formulier:not([hidden]) {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 15px;
+    align-items: end;
+}
+
+.interesse-groep {
+    grid-column: 1 / -1;
+    margin-bottom: 10px;
+}
+
+#bewerk-formulier label:has(#invoer-helpen) {
+    grid-column: span 2;
+}
+
+#bewerk-formulier button {
+    margin: 0 0 10px;
+    justify-self: start;
+}
+
+#bewerk-melding {
+    grid-column: 1 / -1;
+    order: 1;
+}
+#kaart-logo {
+    font-size: 60px;
+    font-weight: 900;
+    color: var(--hu-blauw);
+    text-align: center;
+    margin-top: 70px;
+}
+
+#kaart-logo span {
+    color: var(--hu-rood);
+}

@@ -149,6 +149,47 @@ app.get('/api/ik', alleenIngelogdApi, async (req, res) => {
   }
 });
 
+app.get('/api/profiel', alleenIngelogdApi, async (req, res) => {
+  try {
+    const [gebruiker] = await query(
+      'SELECT naam, tribe, studiejaar, interesses, helpen FROM gebruikers WHERE id = ?',
+      [req.session.gebruikerId]
+    );
+    res.json(gebruiker);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+app.put('/api/profiel', alleenIngelogdApi, async (req, res) => {
+  const { naam, studiejaar, tribe, interesses, helpen } = req.body;
+
+  if (!naam || !naam.trim()) {
+    return res.status(400).json({ fout: 'Vul je naam in.' });
+  }
+  if (![1, 2, 3, 4].includes(Number(studiejaar))) {
+    return res.status(400).json({ fout: 'Kies een geldig studiejaar.' });
+  }
+  if (!['A', 'B', 'C'].includes(tribe)) {
+    return res.status(400).json({ fout: 'Kies een tribe.' });
+  }
+
+  const toegestaan = ['Games', 'Muziek', 'Sport', 'Design', 'Code'];
+  const schoneInteresses = (Array.isArray(interesses) ? interesses : [])
+    .filter((i) => toegestaan.includes(i))
+    .join(',');
+
+  try {
+    await query(
+      'UPDATE gebruikers SET naam = ?, studiejaar = ?, tribe = ?, interesses = ?, helpen = ? WHERE id = ?',
+      [naam.trim(), Number(studiejaar), tribe, schoneInteresses, (helpen || '').trim().slice(0, 200), req.session.gebruikerId]
+    );
+    res.json({ bericht: 'Profiel opgeslagen!' });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
 app.post('/api/uitloggen', (req, res) => {
   req.session.destroy(() => {
     res.json({ bericht: 'Uitgelogd.' });
