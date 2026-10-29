@@ -14,6 +14,8 @@ const layouts = {
   project: { table: "group", tables: 4, seats: 4 },
   pc: { table: "pc-row", tables: 2, seats: 6 },
   gang: { table: "desk-row", tables: 2, seats: 5 },
+  werkplek: { table: "group", tables: 4, seats: 4 },
+  stilte: { table: "desk-row", tables: 2, seats: 3 },
 };
 
 let allStatuses = [];
@@ -39,7 +41,7 @@ function peopleText(count) {
 
 function describeSpot(lokaal) {
   const statuses = statusesIn(lokaal.naam);
-  const soort = lokaal.soort === "gang" ? "gang" : "studieplek";
+  const soort = lokaal.soort === "stilte" ? "stilteplek, alleen focus" : "werkplek";
   let text = lokaal.naam + ", " + soort + ", " + peopleText(statuses.length);
   if (statuses.length > 0) {
     text += ": " + statuses.map(function (status) {
@@ -49,9 +51,37 @@ function describeSpot(lokaal) {
   return text;
 }
 
-function spotContent(element, lokaal) {
+function shortLabel(lokaal) {
+  if (lokaal.kort) return lokaal.kort;
+  if (lokaal.naam.startsWith("Werkplek ")) return lokaal.naam.slice(-1);
+  if (lokaal.soort === "stilte") {
+    const stilte = currentFloor().lokalen.filter(function (plek) {
+      return plek.soort === "stilte";
+    });
+    return "S" + (stilte.indexOf(lokaal) + 1);
+  }
+  return lokaal.naam.split(" ").map(function (woord) {
+    return woord[0].toUpperCase();
+  }).join("");
+}
+
+function spotContent(element, lokaal, withName) {
   const statuses = statusesIn(lokaal.naam);
-  element.textContent = lokaal.naam;
+  element.textContent = "";
+
+  const label = document.createElement("span");
+  label.className = "spot-label";
+  label.textContent = shortLabel(lokaal);
+  element.appendChild(label);
+
+  if (withName) {
+    const name = document.createElement("span");
+    name.className = "spot-name";
+    name.textContent = lokaal.naam;
+    element.appendChild(name);
+  } else {
+    element.title = lokaal.naam;
+  }
 
   if (statuses.length > 0) {
     const dots = document.createElement("span");
@@ -81,7 +111,7 @@ function showFloor() {
   for (let i = 0; i < floor.lokalen.length; i++) {
     const lokaal = floor.lokalen[i];
     const marker = document.createElement("button");
-    marker.className = "room-marker " + (lokaal.soort === "gang" ? "gang" : "studieplek");
+    marker.className = "room-marker " + (lokaal.soort === "stilte" ? "stilte" : "werkplek");
     marker.style.left = "clamp(var(--marker-half), " + lokaal.x + "%, calc(100% - var(--marker-half)))";
     marker.style.top = "clamp(14px, " + lokaal.y + "%, calc(100% - 14px))";
     marker.dataset.room = lokaal.naam;
@@ -97,7 +127,7 @@ function showSpots() {
   const floor = currentFloor();
   const markers = mapRooms.querySelectorAll(".room-marker");
   for (let i = 0; i < markers.length; i++) {
-    spotContent(markers[i], floor.lokalen[i]);
+    spotContent(markers[i], floor.lokalen[i], false);
   }
 
   spotList.innerHTML = "";
@@ -105,8 +135,8 @@ function showSpots() {
     const lokaal = floor.lokalen[i];
     const item = document.createElement("li");
     const button = document.createElement("button");
-    button.className = "spot-button " + (lokaal.soort === "gang" ? "gang" : "studieplek");
-    spotContent(button, lokaal);
+    button.className = "spot-button " + (lokaal.soort === "stilte" ? "stilte" : "werkplek");
+    spotContent(button, lokaal, true);
     button.addEventListener("click", function () {
       openRoomPanel(lokaal, button);
     });
@@ -272,7 +302,7 @@ function clearChosenSeat() {
   }
   chosenSeat = null;
   roomInput.value = "";
-  lockStatus(false);
+  lockStatus(null);
 }
 
 function tableSeats(seat) {
@@ -289,17 +319,17 @@ function tableHasJoiner(seat) {
   return false;
 }
 
-function lockStatus(locked) {
+function lockStatus(forced) {
   for (let i = 0; i < statusButtons.length; i++) {
-    const isGreen = statusButtons[i].dataset.status === "green";
-    statusButtons[i].disabled = locked && !isGreen;
+    const isForced = statusButtons[i].dataset.status === forced;
+    statusButtons[i].disabled = forced !== null && !isForced;
 
-    if (locked) {
-      statusButtons[i].classList.toggle("chosen", isGreen);
+    if (forced !== null) {
+      statusButtons[i].classList.toggle("chosen", isForced);
     }
   }
-  if (locked) {
-    chosenStatus = "green";
+  if (forced !== null) {
+    chosenStatus = forced;
   }
 }
 
@@ -333,10 +363,17 @@ function clickSeat(seat) {
   chosenSeat = seat;
   roomInput.value = openRoom.naam + ", stoel " + seat.dataset.number;
 
-  const joiner = tableHasJoiner(seat);
-  lockStatus(joiner);
-  announcer.textContent = "Stoel " + seat.dataset.number + " gekozen." +
-    (joiner ? " Aan deze tafel zit iemand die je laat aanschuiven, dus je status is Aanschuiven." : " Kies nu je status en tijd.");
+  let message = " Kies nu je status en tijd.";
+  let forced = null;
+  if (openRoom.soort === "stilte") {
+    forced = "red";
+    message = " Dit is een stilteplek, dus je status is Focus.";
+  } else if (tableHasJoiner(seat)) {
+    forced = "green";
+    message = " Aan deze tafel zit iemand die je laat aanschuiven, dus je status is Aanschuiven.";
+  }
+  lockStatus(forced);
+  announcer.textContent = "Stoel " + seat.dataset.number + " gekozen." + message;
 }
 
 function fillSeats() {

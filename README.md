@@ -9,5 +9,5 @@
 4. `npm start` en ga naar http://localhost:3000
 
 ## Lokalen op de plattegrond
-De lokalen per verdieping staan in `public/js/lokalen.js` (naam, plek op het plaatje in procenten en soort: `lokaal`, `project`, `pc` of `gang`).
+De lokalen per verdieping staan in `public/js/lokalen.js` (naam, plek op het plaatje in procenten en soort: `werkplek` of `stilte`; een stilteplek kan alleen Focus).
 De server zet nieuwe lokalen uit dat bestand bij het starten vanzelf in de database.

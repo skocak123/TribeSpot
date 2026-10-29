@@ -150,14 +150,14 @@ h1 {
   transform: translate(-50%, -50%);
 }
 
-.room-marker.gang {
+.room-marker.stilte {
   border-color: var(--kaart-blauw);
   background-color: white;
   color: var(--kaart-blauw);
 }
 
 .room-marker:hover,
-.room-marker.gang:hover {
+.room-marker.stilte:hover {
   border-color: white;
   background-color: var(--hu-rood);
   color: white;
@@ -173,6 +173,26 @@ h1 {
 
 .room-panel h2:focus {
   outline: none;
+}
+
+.spot-button .spot-label {
+  min-width: 30px;
+  padding: 2px 6px;
+  border: 2px solid var(--kaart-blauw);
+  border-radius: var(--border-radius-round);
+  background-color: var(--kaart-blauw);
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+
+.spot-button.stilte .spot-label {
+  background-color: white;
+  color: var(--kaart-blauw);
+}
+
+.spot-name {
+  flex: 1;
 }
 
 .marker-count {
@@ -205,7 +225,7 @@ h1 {
   font-weight: bold;
 }
 
-.legend-pill.gang {
+.legend-pill.stilte {
   background-color: white;
   color: var(--kaart-blauw);
 }
@@ -243,7 +263,7 @@ h1 {
   cursor: pointer;
 }
 
-.spot-button.gang {
+.spot-button.stilte {
   border-left-style: dashed;
 }
 
