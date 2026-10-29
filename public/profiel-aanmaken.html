@@ -15,58 +15,64 @@
         <h1>Welkom!</h1>
         <p>Maak je profiel aan en vind andere studenten op de plattegrond.</p>
 
+    <form id="registreerformulier">
         <div class="naast">
             <div>
-                <label>Naam</label>
-                <input type="text" placeholder="Je naam">
+                <label for="naam">Naam</label>
+                <input type="text" id="naam" name="naam" placeholder="Je naam" required>
             </div>
             <div>
-                <label>Gebruikersnaam</label>
-                <input type="text" placeholder="Zo zien anderen jou">
+                <label for="gebruikersnaam">Gebruikersnaam</label>
+                <input type="text" id="gebruikersnaam" name="gebruikersnaam" placeholder="Zo zien anderen jou" required>
             </div>
         </div>
 
         <div class="naast">
             <div>
                 <label>HU-e-mailadres</label>
-                <input type="email" placeholder="naam@student.hu.nl">
+                <input type="email" id="email" name="email" placeholder="naam@student.hu.nl" required>
             </div>
             <div>
                 <label>Wachtwoord</label>
-                <input type="password" placeholder="Kies een wachtwoord">
+                <input type="password" id="wachtwoord" name="wachtwoord" placeholder="Kies een wachtwoord" minlength="8" required>
             </div>
         </div>
 
-        <label>Studiejaar</label>
-        <select>
-            <option>Jaar 1</option>
-            <option>Jaar 2</option>
-            <option>Jaar 3</option>
-            <option>Jaar 4</option>
+        <label for="studiejaar">Studiejaar</label>
+        <select id="studiejaar" name="studiejaar">
+            <option value="1">Jaar 1</option>
+            <option value="2">Jaar 2</option>
+            <option value="3">Jaar 3</option>
+            <option value="4">Jaar 4</option>
         </select>
 
         <label>Tribe</label>
         <div class="rij">
-            <label class="keuze"><input type="radio" name="tribe"> <span class="stip rood"></span> Tribe A</label>
-            <label class="keuze"><input type="radio" name="tribe"> <span class="stip blauw"></span> Tribe B</label>
-            <label class="keuze"><input type="radio" name="tribe"> <span class="stip groen"></span> Tribe C</label>
+            <label class="keuze"><input type="radio" name="tribe" value="A" required><span class="stip rood"></span> Tribe A</label>
+            <label class="keuze"><input type="radio" name="tribe" value="B"><span class="stip blauw"></span> Tribe B</label>
+            <label class="keuze"><input type="radio" name="tribe" value="C"><span class="stip groen"></span> Tribe C</label>
         </div>
 
         <label>Interesses</label>
         <div class="rij">
-            <label class="knopje"><input type="checkbox"> Games</label>
-            <label class="knopje"><input type="checkbox"> Muziek</label>
-            <label class="knopje"><input type="checkbox"> Sport</label>
-            <label class="knopje"><input type="checkbox"> Design</label>
-            <label class="knopje"><input type="checkbox"> Code</label>
+            <label class="knopje"><input type="checkbox" name="interesses" value="Games"> Games</label>
+            <label class="knopje"><input type="checkbox" name="interesses" value="Muziek"> Muziek</label>
+            <label class="knopje"><input type="checkbox" name="interesses" value="Sport"> Sport</label>
+            <label class="knopje"><input type="checkbox" name="interesses" value="Design"> Design</label>
+            <label class="knopje"><input type="checkbox" name="interesses" value="Code"> Code</label>
         </div>
 
-        <label>Ik kan helpen met</label>
-        <input type="text" placeholder="Bijv. HTML, CSS of Python">
+        <label for="helpen">Ik kan helpen met</label>
+        <input type="text" id="helpen" name="helpen" placeholder="Bijv. HTML, CSS of Python">
+ 
+        <p id="foutmelding" class="foutmelding" hidden></p>
 
-        <button class="start">Start</button>
+        <button type="submit" class="start">Start</button>
+    </form>
 
         <p class="onderaan">Al een profiel? <a href="inloggen.html">Log in</a></p>
     </div>
+    
+    <script src="js/registreren.js"></script>
 </body>
 </html>

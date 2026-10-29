@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/tribetown.css">
 
+  <script src="js/lokalen.js" defer></script>
   <script src="js/main.js" defer></script>
 </head>
 
@@ -35,117 +36,43 @@
           <option value="2" selected>Verdieping 2</option>
           <option value="3">Verdieping 3</option>
           <option value="4">Verdieping 4</option>
+          <option value="5">Verdieping 5</option>
+          <option value="6">Verdieping 6</option>
+          <option value="7">Verdieping 7</option>
         </select>
       </div>
 
+      <ul class="map-legend" aria-label="Legenda">
+        <li><span class="status-dot green"></span>Aanschuiven</li>
+        <li><span class="status-dot yellow"></span>Vragen</li>
+        <li><span class="status-dot red"></span>Focus</li>
+        <li><span class="legend-pill">Studieplek</span></li>
+        <li><span class="legend-pill gang">Gang</span></li>
+      </ul>
+
       <div class="map">
-        <section class="room room-one">
-          <h2>Lokaal 2.01</h2>
-          <div class="board"></div>
-          <div class="desk-row">
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-          </div>
-          <div class="desk-row">
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-          </div>
-          <div class="desk-row">
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-          </div>
-        </section>
+        <div class="map-inner">
+          <img class="map-image" src="assets/images/plattegrond/hl15-2.svg" alt="Plattegrond van HL15">
+          <div class="map-rooms"></div>
+        </div>
 
-        <section class="room room-two project">
-          <h2>Lokaal </h2>
-          <div class="group">
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
+        <section class="room-panel" hidden aria-labelledby="room-title">
+          <div class="room-header">
+            <button class="close-button room-close">Terug naar plattegrond</button>
+            <div>
+              <h2 id="room-title" tabindex="-1"></h2>
+              <p class="room-info"></p>
+            </div>
           </div>
-          <div class="group">
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-          </div>
-        </section>
-
-        <section class="room room-three">
-          <h2>Lokaal </h2>
-          <div class="pc-row">
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-          </div>
-          <div class="pc-row">
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-          </div>
-        </section>
-
-        <section class="room room-four project">
-          <h2>Lokaal </h2>
-          <div class="group">
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-          </div>
-          <div class="group">
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-          </div>
-        </section>
-
-        <section class="room room-five">
-          <h2>Lokaal </h2>
-          <div class="board"></div>
-          <div class="desk-row">
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-          </div>
-          <div class="desk-row">
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-            <span class="seat"></span>
-          </div>
-        </section>
-
-        <section class="room room-six">
-          <h2>Lokaal </h2>
-          <div class="pc-row">
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-          </div>
-          <div class="pc-row">
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-            <span class="pc"><span class="seat"></span></span>
-          </div>
+          <section class="room">
+            <div class="room-seats"></div>
+          </section>
         </section>
       </div>
+
+      <h2 class="spot-heading">Plekken op deze verdieping</h2>
+      <ul class="spot-list"></ul>
+      <p class="sr-only" aria-live="polite"></p>
 
       <div id="student-card" class="student-card" popover>
         <h3 class="card-name"></h3>
@@ -162,7 +89,7 @@
         <p class="small-heading">JOUW PLEK</p>
         <h2>Ik zit hier</h2>
 
-        <div class="field-box">lokaal:<input type="text" class="my-room" placeholder="klik op een stoel" readonly></div>
+        <div class="field-box">lokaal:<input type="text" class="my-room" placeholder="klik op een lokaal en een stoel" readonly></div>
         <div class="field-box">ik werk aan:<input type="text" class="my-work"></div>
 
         <div class="status-buttons">
