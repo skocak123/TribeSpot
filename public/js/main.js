@@ -42,7 +42,18 @@ const statusButtons = document.querySelectorAll(".status-button");
 const shareButton = document.querySelector(".share-button");
 const leaveButton = document.querySelector(".leave-button");
 
-const myName = "selim";
+let myName = "";
+
+fetch("/api/ik")
+  .then(function (response) {
+    if (!response.ok) {
+      window.location.href = "inloggen.html";
+    }
+    return response.json();
+  })
+  .then(function (me) {
+    myName = me.naam;
+  });
 
 let chosenStatus = "";
 let chosenSeat = null;

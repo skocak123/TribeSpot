@@ -143,8 +143,6 @@ h1 {
   
 }
 
-
-
 .room {
   position: relative;
   display: flex;
@@ -318,7 +316,6 @@ h1 {
   background-color: var(--hu-rood);
 }
 
-/* de status die je gekozen hebt */
 .status-button.chosen {
   background-color: var(--hu-rood);
   outline: 2px solid black;
