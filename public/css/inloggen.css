@@ -89,6 +89,13 @@ input:focus {
     background-color: var(--hu-blauw-donker);
 }
 
+.melding {
+    margin-top: 20px;
+    padding: 12px;
+    background-color: var(--lichtblauw);
+    border-radius: 4px;
+}
+
 .onderaan {
     text-align: center;
     font-size: 14px;
