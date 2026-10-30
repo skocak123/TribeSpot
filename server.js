@@ -52,10 +52,24 @@ function databaseFout(res, err) {
 
 const geldigeFoto = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
 
-// Oudere databases hebben nog geen kolom "foto": die voegen we dan toe
 async function zorgVoorFotoKolom() {
   try {
     await query('ALTER TABLE gebruikers ADD COLUMN foto MEDIUMTEXT');
+  } catch (err) {
+    if (!/duplicate column/i.test(err.message)) throw err;
+  }
+}
+async function zorgVoorVerbindingen() {
+  await query(`CREATE TABLE IF NOT EXISTS verbindingen (
+    gebruiker_a INT NOT NULL,
+    gebruiker_b INT NOT NULL,
+    sinds DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (gebruiker_a, gebruiker_b),
+    FOREIGN KEY (gebruiker_a) REFERENCES gebruikers(id) ON DELETE CASCADE,
+    FOREIGN KEY (gebruiker_b) REFERENCES gebruikers(id) ON DELETE CASCADE
+  )`);
+  try {
+    await query('ALTER TABLE statussen ADD COLUMN tafel INT');
   } catch (err) {
     if (!/duplicate column/i.test(err.message)) throw err;
   }
@@ -172,6 +186,24 @@ app.get('/api/profiel', alleenIngelogdApi, async (req, res) => {
   }
 });
 
+app.get('/api/verbindingen', alleenIngelogdApi, async (req, res) => {
+  const ik = req.session.gebruikerId;
+  try {
+    const rijen = await query(
+      `SELECT gebruikers.naam, gebruikers.tribe
+       FROM verbindingen
+       JOIN gebruikers ON gebruikers.id = CASE WHEN verbindingen.gebruiker_a = ? THEN verbindingen.gebruiker_b ELSE verbindingen.gebruiker_a END
+       WHERE verbindingen.gebruiker_a = ? OR verbindingen.gebruiker_b = ?
+       ORDER BY gebruikers.naam`,
+      [ik, ik, ik]
+    );
+    res.json(rijen);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+
 app.put('/api/profiel', alleenIngelogdApi, async (req, res) => {
   const { naam, studiejaar, tribe, interesses, helpen, foto } = req.body;
 
@@ -209,6 +241,23 @@ app.put('/api/profiel', alleenIngelogdApi, async (req, res) => {
     databaseFout(res, err);
   }
 });
+app.delete('/api/account', alleenIngelogdApi, async (req, res) => {
+  const { bevestiging } = req.body;
+
+  if (bevestiging !== 'VERWIJDEREN') {
+    return res.status(400).json({ fout: 'Typ VERWIJDEREN in hoofdletters om je account te verwijderen.' });
+  }
+
+  try {
+    await query('DELETE FROM gebruikers WHERE id = ?', [req.session.gebruikerId]);
+    req.session.destroy(() => {
+      res.json({ bericht: 'Account verwijderd.' });
+    });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
 
 app.post('/api/uitloggen', (req, res) => {
   req.session.destroy(() => {
@@ -316,7 +365,6 @@ function vandaagBegin() {
     String(nu.getDate()).padStart(2, '0') + ' 00:00:00';
 }
 
-// Statussen waarvan de "tot"-tijd voorbij is (of die van een eerdere dag zijn) weghalen
 async function verwijderVerlopenStatussen() {
   await query('DELETE FROM statussen WHERE tot <= ? OR gedeeld_op < ?', [tijdVanNu(), vandaagBegin()]);
 }
@@ -353,7 +401,7 @@ app.get('/api/online', async (req, res) => {
 });
 
 app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
-  const { lokaal, plek, werkt_aan, beschikbaarheid, tot } = req.body;
+  const { lokaal, plek, werkt_aan, beschikbaarheid, tot, tafel } = req.body;
   const mijnGebruikerId = req.session.gebruikerId;
 
   if (!lokaal || !plek || !beschikbaarheid || !tot) {
@@ -381,9 +429,25 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
 
     await query('DELETE FROM statussen WHERE gebruiker_id = ?', [mijnGebruikerId]);
     await query(
-      'INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot, plek) VALUES (?, ?, ?, ?, ?, ?)',
-      [mijnGebruikerId, lokaalId, werkt_aan, beschikbaarheid, tot, plek]
-    );
+              'INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot, plek, tafel) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [mijnGebruikerId, lokaalId, werkt_aan, beschikbaarheid, tot, plek, tafel || null]
+      );
+      
+    if (tafel) {
+      const tafelgenoten = await query(
+        'SELECT gebruiker_id FROM statussen WHERE lokaal_id = ? AND tafel = ? AND gebruiker_id != ?',
+        [lokaalId, tafel, mijnGebruikerId]
+      );
+      for (const genoot of tafelgenoten) {
+        const a = Math.min(mijnGebruikerId, genoot.gebruiker_id);
+        const b = Math.max(mijnGebruikerId, genoot.gebruiker_id);
+        const bestaat = await query('SELECT gebruiker_a FROM verbindingen WHERE gebruiker_a = ? AND gebruiker_b = ?', [a, b]);
+        if (bestaat.length === 0) {
+          await query('INSERT INTO verbindingen (gebruiker_a, gebruiker_b) VALUES (?, ?)', [a, b]);
+        }
+      }
+    }
+
     res.json({ gelukt: true });
   } catch (err) {
     databaseFout(res, err);
@@ -427,7 +491,7 @@ app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-zorgVoorFotoKolom().then(() => {
+zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(() => {
   app.listen(POORT, () => {
     console.log(`Server draait op http://localhost:${POORT}`);
   });

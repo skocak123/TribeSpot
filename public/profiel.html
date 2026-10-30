@@ -35,7 +35,8 @@
             <h3>Kan helpen met</h3>
             <div id="helpen"></div>
 
-                        <button id="bewerk-knop">Profiel bewerken</button>
+            <button id="bewerk-knop">Profiel bewerken</button>
+            <button id="verwijder-account-knop">Account verwijderen</button>
 
 
         </aside>
@@ -113,6 +114,19 @@
 
 
     </main>
+        <dialog id="verwijder-venster">
+        <h2>Account verwijderen</h2>
+        <p>Weet je het zeker? Je profiel, je foto en je plek op de plattegrond worden <strong>definitief</strong> verwijderd. Dit kan niet ongedaan worden gemaakt.</p>
+        <label>Typ <strong>VERWIJDEREN</strong> om te bevestigen
+            <input type="text" id="verwijder-invoer" autocomplete="off">
+        </label>
+        <p id="verwijder-fout"></p>
+        <div class="verwijder-knoppen">
+            <button id="verwijder-bevestig" disabled>Verwijderen</button>
+            <button id="verwijder-annuleer">Annuleren</button>
+        </div>
+    </dialog>
+
             <script src="js/navbar.js"></script>
 
         <script src="js/profiel.js"></script>

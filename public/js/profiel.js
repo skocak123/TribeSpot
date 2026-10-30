@@ -35,6 +35,38 @@ async function laadProfiel() {
 
 laadProfiel();
 
+async function laadVerbindingen() {
+  const antwoord = await fetch('/api/verbindingen');
+  if (!antwoord.ok) return;
+  const verbindingen = await antwoord.json();
+
+    const tribes = new Set(verbindingen.map((persoon) => persoon.tribe));
+  const doel = 10;
+
+  document.querySelector('#aantal-verbindingen').textContent = verbindingen.length;
+  document.querySelector('#verbindingen-tekst').textContent = verbindingen.length === 0
+    ? 'Nog niemand. Ga op de plattegrond aan een tafel zitten bij andere studenten!'
+    : 'studenten leren kennen uit ' + tribes.size + ' van de 3 tribes · doel: ' + doel;
+  const procent = Math.min(verbindingen.length / doel, 1) * 100;
+  document.querySelector('#balk').style.width = procent + '%';
+
+  const lijst = document.querySelector('#stipjes');
+  verbindingen.forEach((persoon) => {
+    const kaartje = document.createElement('span');
+    kaartje.className = 'verbinding';
+
+    const stip = document.createElement('span');
+    stip.className = 'tribe-stip tribe-' + persoon.tribe;
+
+    kaartje.appendChild(stip);
+    kaartje.append(persoon.naam);
+    lijst.appendChild(kaartje);
+  });
+}
+
+laadVerbindingen();
+
+
 if (sessionStorage.getItem('profielBijgewerkt')) {
   sessionStorage.removeItem('profielBijgewerkt');
 
@@ -168,5 +200,50 @@ formulier.addEventListener('submit', async (event) => {
     location.reload();
   } else {
     melding.textContent = resultaat.fout;
+  }
+});
+
+const verwijderVenster = document.querySelector('#verwijder-venster');
+const verwijderInvoer = document.querySelector('#verwijder-invoer');
+const verwijderBevestig = document.querySelector('#verwijder-bevestig');
+const verwijderFout = document.querySelector('#verwijder-fout');
+
+// Klik op "Account verwijderen": venster openen
+document.querySelector('#verwijder-account-knop').addEventListener('click', () => {
+  verwijderInvoer.value = '';
+  verwijderFout.textContent = '';
+  verwijderBevestig.disabled = true;
+  verwijderVenster.showModal();
+  verwijderInvoer.focus();
+});
+
+// De rode knop werkt pas als er precies VERWIJDEREN staat
+verwijderInvoer.addEventListener('input', () => {
+  verwijderBevestig.disabled = verwijderInvoer.value !== 'VERWIJDEREN';
+});
+
+document.querySelector('#verwijder-annuleer').addEventListener('click', () => {
+  verwijderVenster.close();
+});
+
+verwijderBevestig.addEventListener('click', async () => {
+  const antwoord = await fetch('/api/account', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bevestiging: verwijderInvoer.value })
+  });
+  const resultaat = await antwoord.json();
+
+    if (antwoord.ok) {
+    verwijderVenster.innerHTML = `
+      <h2 class="verwijderd-titel">✓ Account verwijderd</h2>
+      <p>Je account en al je gegevens zijn verwijderd. Je wordt nu doorgestuurd naar de inlogpagina...</p>
+    `;
+    setTimeout(() => {
+      location.href = 'inloggen.html';
+    }, 2500);
+  } else {
+
+    verwijderFout.textContent = resultaat.fout;
   }
 });

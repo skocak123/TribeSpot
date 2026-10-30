@@ -315,3 +315,145 @@ aside h3 {
 .opgeslagen-melding.weg {
     opacity: 0;
 }
+#verwijder-account-knop {
+    display: block;
+    margin: 10px auto 0;
+    padding: 8px 16px;
+    background-color: white;
+    color: #e6302b;
+    border: 1px solid #e6302b;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#verwijder-account-knop:hover {
+    background-color: #e6302b;
+    color: white;
+}
+#verwijder-venster {
+    margin: auto;
+    max-width: 380px;
+    padding: 24px;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+#verwijder-venster::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+#verwijder-venster h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #e6302b;
+}
+
+#verwijder-venster p {
+    margin: 0 0 14px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+#verwijder-venster label {
+    display: block;
+    font-size: 14px;
+}
+
+#verwijder-invoer {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px 14px;
+    border: 1px solid black;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+#verwijder-invoer:focus {
+    outline: none;
+    border-color: #e6302b;
+}
+
+#verwijder-fout {
+    color: #e6302b;
+    margin: 8px 0 0;
+}
+
+.verwijder-knoppen {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.verwijder-knoppen button {
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#verwijder-bevestig {
+    background-color: #e6302b;
+    color: white;
+    border: none;
+}
+
+#verwijder-bevestig:disabled {
+    background-color: #f0a5a3;
+    cursor: not-allowed;
+}
+
+#verwijder-annuleer {
+    background-color: white;
+    color: #00a1e1;
+    border: 1px solid #00a1e1;
+}
+#aantal-verbindingen {
+    font-size: 40px;
+    font-weight: bold;
+    color: #00a1e1;
+    margin-top: 10px;
+}
+
+#verbindingen-tekst {
+    color: gray;
+    font-size: 14px;
+}
+
+.balk-binnen {
+    height: 100%;
+    width: 0;
+    background-color: #00a1e1;
+    border-radius: 6px;
+    transition: width 0.6s;
+}
+
+#stipjes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.verbinding {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #ddd;
+    border-radius: 999px;
+    padding: 4px 12px 4px 8px;
+    font-size: 13px;
+}
+
+.tribe-stip {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.tribe-A { background-color: #e6302b; }
+.tribe-B { background-color: #00a1e1; }
+.tribe-C { background-color: #a6ce39; }
