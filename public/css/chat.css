@@ -1,7 +1,8 @@
-.chat {
-    background: white;
-    border-radius: 2%;
-    height: 600px;
-    width: 800px;
-    margin: 0 auto;
+.chat{
+    border: none;
+    height: 100vh;
+    width:60%;
+    border-radius: var(--border-radius-xl);
+    Background:white ;
+
 }
