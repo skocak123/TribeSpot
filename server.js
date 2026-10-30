@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 if (!process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET ontbreekt in .env');
@@ -48,6 +48,17 @@ function alleenIngelogdApi(req, res, next) {
 function databaseFout(res, err) {
   console.log(err);
   res.status(500).json({ fout: 'Er ging iets mis met de database.' });
+}
+
+const geldigeFoto = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+
+// Oudere databases hebben nog geen kolom "foto": die voegen we dan toe
+async function zorgVoorFotoKolom() {
+  try {
+    await query('ALTER TABLE gebruikers ADD COLUMN foto MEDIUMTEXT');
+  } catch (err) {
+    if (!/duplicate column/i.test(err.message)) throw err;
+  }
 }
 
 app.get('/', alleenIngelogd, (req, res) => {
@@ -142,7 +153,7 @@ app.post('/api/inloggen', async (req, res) => {
 
 app.get('/api/ik', alleenIngelogdApi, async (req, res) => {
   try {
-    const [gebruiker] = await query('SELECT id, email, naam FROM gebruikers WHERE id = ?', [req.session.gebruikerId]);
+    const [gebruiker] = await query('SELECT id, email, naam, foto FROM gebruikers WHERE id = ?', [req.session.gebruikerId]);
     res.json(gebruiker);
   } catch (err) {
     databaseFout(res, err);
@@ -152,7 +163,7 @@ app.get('/api/ik', alleenIngelogdApi, async (req, res) => {
 app.get('/api/profiel', alleenIngelogdApi, async (req, res) => {
   try {
     const [gebruiker] = await query(
-      'SELECT naam, tribe, studiejaar, interesses, helpen FROM gebruikers WHERE id = ?',
+      'SELECT naam, tribe, studiejaar, interesses, helpen, foto FROM gebruikers WHERE id = ?',
       [req.session.gebruikerId]
     );
     res.json(gebruiker);
@@ -162,7 +173,13 @@ app.get('/api/profiel', alleenIngelogdApi, async (req, res) => {
 });
 
 app.put('/api/profiel', alleenIngelogdApi, async (req, res) => {
-  const { naam, studiejaar, tribe, interesses, helpen } = req.body;
+  const { naam, studiejaar, tribe, interesses, helpen, foto } = req.body;
+
+  // foto: weglaten = niet veranderen, null = verwijderen, anders een kleine afbeelding als data-URL
+  if (foto !== undefined && foto !== null &&
+      (typeof foto !== 'string' || foto.length > 500000 || !geldigeFoto.test(foto))) {
+    return res.status(400).json({ fout: 'Deze foto kan niet worden opgeslagen.' });
+  }
 
   if (!naam || !naam.trim()) {
     return res.status(400).json({ fout: 'Vul je naam in.' });
@@ -184,6 +201,9 @@ app.put('/api/profiel', alleenIngelogdApi, async (req, res) => {
       'UPDATE gebruikers SET naam = ?, studiejaar = ?, tribe = ?, interesses = ?, helpen = ? WHERE id = ?',
       [naam.trim(), Number(studiejaar), tribe, schoneInteresses, (helpen || '').trim().slice(0, 200), req.session.gebruikerId]
     );
+    if (foto !== undefined) {
+      await query('UPDATE gebruikers SET foto = ? WHERE id = ?', [foto, req.session.gebruikerId]);
+    }
     res.json({ bericht: 'Profiel opgeslagen!' });
   } catch (err) {
     databaseFout(res, err);
@@ -407,6 +427,8 @@ app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-app.listen(POORT, () => {
-  console.log(`Server draait op http://localhost:${POORT}`);
+zorgVoorFotoKolom().then(() => {
+  app.listen(POORT, () => {
+    console.log(`Server draait op http://localhost:${POORT}`);
+  });
 });

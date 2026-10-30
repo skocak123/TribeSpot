@@ -197,3 +197,121 @@ aside h3 {
 #kaart-logo span {
     color: var(--hu-rood);
 }
+
+.avatar,
+.foto-voorbeeld {
+    background-size: cover;
+    background-position: center;
+}
+
+#bewerk-formulier:not([hidden]) {
+    grid-template-columns: auto 1fr 1fr 1fr;
+}
+
+.foto-keuze {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.foto-knoppen {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#bewerk-formulier .foto-kies {
+    margin: 0;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background-color: #00a1e1;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+#bewerk-formulier .foto-kies:hover {
+    background-color: #0086bd;
+}
+
+#bewerk-formulier .foto-voorbeeld {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    border-radius: 50%;
+    background-color: #00a1e1;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#bewerk-formulier .foto-voorbeeld:hover {
+    opacity: 0.8;
+}
+
+
+#bewerk-formulier #foto-verwijderen {
+    margin: 0;
+    padding: 4px 12px;
+    background: white;
+    border: 1px solid #e6302b;
+    color: #e6302b;
+    font-size: 12px;
+}
+
+#bewerk-formulier #foto-verwijderen:hover {
+    background-color: #e6302b;
+    color: white;
+}
+
+#bewerk-formulier #foto-verwijderen[hidden] {
+    display: none;
+}
+
+#bewerk-formulier #annuleren-knop {
+    background-color: white;
+    color: #00a1e1;
+    border: 1px solid #00a1e1;
+}
+
+#bewerk-formulier #annuleren-knop:hover {
+    background-color: #f0f0f0;
+}
+
+.formulier-knoppen {
+    grid-column: span 2;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#bewerk-formulier .formulier-knoppen button {
+    margin: 0;
+}
+
+.opgeslagen-melding {
+    position: fixed;
+    top: 95px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #a6ce39;
+    color: white;
+    font-weight: bold;
+    padding: 12px 24px;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.5s;
+    z-index: 10;
+}
+
+.opgeslagen-melding.weg {
+    opacity: 0;
+}

@@ -59,6 +59,15 @@
                   <div id="kaart-logo">Tribe<span>Spot</span></div>
 
                  <form id="bewerk-formulier" hidden>
+                <div class="foto-keuze">
+                    <label class="foto-voorbeeld" id="foto-voorbeeld" for="invoer-foto" title="Foto kiezen"></label>
+                    <input type="file" id="invoer-foto" accept="image/*" hidden>
+                    <div class="foto-knoppen">
+                        <label class="foto-kies" id="foto-kies" for="invoer-foto">Foto uploaden</label>
+                        <button type="button" id="foto-verwijderen" hidden>Verwijderen</button>
+                    </div>
+                </div>
+
                 <label>Naam
                     <input type="text" id="invoer-naam">
                 </label>
@@ -81,21 +90,23 @@
                 </label>
 
                 <div class="interesse-groep">
-                                    </div>
-
-                <p>Interesses</p>
-                <label class="vinkje"><input type="checkbox" name="interesse" value="Games"> Games</label>
-                <label class="vinkje"><input type="checkbox" name="interesse" value="Muziek"> Muziek</label>
-                <label class="vinkje"><input type="checkbox" name="interesse" value="Sport"> Sport</label>
-                <label class="vinkje"><input type="checkbox" name="interesse" value="Design"> Design</label>
-                <label class="vinkje"><input type="checkbox" name="interesse" value="Code"> Code</label>
+                    <p>Interesses</p>
+                    <label class="vinkje"><input type="checkbox" name="interesse" value="Games"> Games</label>
+                    <label class="vinkje"><input type="checkbox" name="interesse" value="Muziek"> Muziek</label>
+                    <label class="vinkje"><input type="checkbox" name="interesse" value="Sport"> Sport</label>
+                    <label class="vinkje"><input type="checkbox" name="interesse" value="Design"> Design</label>
+                    <label class="vinkje"><input type="checkbox" name="interesse" value="Code"> Code</label>
+                </div>
 
                 <label>Kan helpen met
                     <input type="text" id="invoer-helpen">
                 </label>
 
                 <p id="bewerk-melding"></p>
-                <button type="submit">Opslaan</button>
+                <div class="formulier-knoppen">
+                    <button type="submit">Opslaan</button>
+                    <button type="button" id="annuleren-knop">Annuleren</button>
+                </div>
             </form>
             </div>
         </section>

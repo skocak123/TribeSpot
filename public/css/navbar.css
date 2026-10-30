@@ -196,3 +196,8 @@ nav a:hover{
     background-color: var(--hu-blauw);
     color: white;
 }
+
+#nav-avatar {
+    background-size: cover;
+    background-position: center;
+}

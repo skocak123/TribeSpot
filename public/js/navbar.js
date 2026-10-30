@@ -1,6 +1,6 @@
 async function laadNavProfiel() {
   const antwoord = await fetch('/api/ik');
-  if (!antwoord.ok) return; // niet ingelogd: niets tonen
+  if (!antwoord.ok) return; 
 
   const ik = await antwoord.json();
 
@@ -25,7 +25,11 @@ async function laadNavProfiel() {
   const navAvatar = document.querySelector('#nav-avatar');
   const navMenu = document.querySelector('#nav-menu');
 
-  navAvatar.textContent = ik.naam[0].toUpperCase();
+  if (ik.foto) {
+    navAvatar.style.backgroundImage = 'url("' + ik.foto + '")';
+  } else {
+    navAvatar.textContent = ik.naam[0].toUpperCase();
+  }
     document.querySelector('#nav-naam').textContent = ik.naam;
   document.querySelector('#nav-email').textContent = ik.email;
 
@@ -41,8 +45,6 @@ async function laadNavProfiel() {
 }
 
 laadNavProfiel();
-
-// ---- Vertrektijd: 15 minuten van tevoren waarschuwen, om de tijd is je plek weg ----
 
 let mijnTot = null;
 let gewaarschuwdVoor = null;
@@ -64,7 +66,6 @@ function tijdPlus(tijd, minuten) {
 }
 
 function verversPlattegrond() {
-  // Alleen op de plattegrond bestaan deze functies (uit main.js)
   if (typeof loadStatuses === 'function') loadStatuses();
   if (typeof loadOnline === 'function') loadOnline();
 }
@@ -141,12 +142,11 @@ function toonVerlopenMelding(tot) {
 
 async function controleerVertrektijd() {
   const antwoord = await fetch('/api/mijn-status');
-  if (!antwoord.ok) return; // niet ingelogd
+  if (!antwoord.ok) return;
 
   const status = await antwoord.json();
 
   if (status === null) {
-    // Plek is weg. Kwam dat doordat de tijd om is (en niet door "Ik ga weg")?
     if (mijnTot !== null && minutenTot(mijnTot) <= 0) {
       if (vertrekVenster.open) vertrekVenster.close();
       toonVerlopenMelding(mijnTot);
