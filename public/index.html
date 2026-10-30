@@ -30,10 +30,10 @@
         <div>
           <h1>Vind elkaar op school</h1>
         </div>
-        <select class="blue-select floor-select" aria-label="Kies verdieping">
-          <option value="0">Begane grond</option>
+        <select class="blue-select floor-select" aria-label="Kies verdieping" autocomplete="off">
+          <option value="0" selected>Begane grond</option>
           <option value="1">Verdieping 1</option>
-          <option value="2" selected>Verdieping 2</option>
+          <option value="2">Verdieping 2</option>
           <option value="3">Verdieping 3</option>
           <option value="4">Verdieping 4</option>
           <option value="5">Verdieping 5</option>
@@ -50,9 +50,10 @@
         <li><span class="legend-pill stilte">Stilteplek</span> alleen focus</li>
       </ul>
 
+      <div class="map-wrap">
       <div class="map">
         <div class="map-inner">
-          <img class="map-image" src="assets/images/plattegrond/hl15-2.svg" alt="Plattegrond van HL15">
+          <img class="map-image" src="assets/images/plattegrond/hl15-0.svg" alt="Plattegrond van HL15">
           <div class="map-rooms"></div>
         </div>
 
@@ -72,6 +73,7 @@
 
       <h2 class="spot-heading">Plekken op deze verdieping</h2>
       <ul class="spot-list"></ul>
+      </div>
       <p class="sr-only" aria-live="polite"></p>
 
       <div id="student-card" class="student-card" popover>

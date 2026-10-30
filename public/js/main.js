@@ -104,6 +104,7 @@ function spotContent(element, lokaal, withName) {
 function showFloor() {
   const floor = currentFloor();
   mapImage.src = "assets/images/plattegrond/" + floor.plaatje;
+  roomPanel.parentElement.style.setProperty("--verhouding", floor.verhouding);
   mapImage.alt = "Plattegrond " + floor.naam + ". De plekken staan ook in de lijst onder de plattegrond.";
   closeRoom();
 
@@ -158,6 +159,7 @@ function makeSeat(table, number) {
   seat.className = "seat";
   seat.dataset.table = table;
   seat.dataset.number = number;
+  seat.textContent = number;
   seat.addEventListener("click", function () {
     clickSeat(seat);
   });
@@ -191,31 +193,92 @@ function buildDrawnSeats(lokaal) {
   }
 }
 
-function buildPhotoSeats(lokaal) {
-  const foto = lokaal.foto;
-  const photo = document.createElement("div");
-  photo.className = "room-photo";
-  photo.style.aspectRatio = foto.breedte + " / " + foto.hoogte;
+function cropAround(area, ratio) {
+  const unitW = area.b * ratio;
+  const unitH = area.h;
+  const margin = Math.max(10, 0.5 * Math.max(unitW, unitH));
+  let width = Math.max(unitW + 2 * margin, 35 * ratio);
+  let height = unitH + 2 * margin;
+  if (width < height * 2) width = height * 2;
+  if (width > height * 3.2) height = width / 3.2;
+
+  const crop = {
+    b: Math.min(100, width / ratio),
+    h: Math.min(100, height),
+  };
+  crop.x = Math.min(Math.max(0, area.x + area.b / 2 - crop.b / 2), 100 - crop.b);
+  crop.y = Math.min(Math.max(0, area.y + area.h / 2 - crop.h / 2), 100 - crop.h);
+  return crop;
+}
+
+function offset(percent, pixels) {
+  return "calc(" + percent + "% " + (pixels < 0 ? "- " : "+ ") + Math.abs(pixels) + "px)";
+}
+
+function buildMapSeats(lokaal) {
+  const floor = currentFloor();
+  const area = lokaal.gebied;
+  const crop = cropAround(area, floor.verhouding);
+
+  const map = document.createElement("div");
+  map.className = "room-photo room-map";
+  map.style.aspectRatio = crop.b * floor.verhouding + " / " + crop.h;
 
   const image = document.createElement("img");
-  image.src = "assets/images/plattegrond/" + foto.bestand;
+  image.src = "assets/images/plattegrond/" + floor.plaatje;
   image.alt = "";
-  image.style.width = (fotoBreedte / foto.breedte) * 100 + "%";
-  image.style.left = (-foto.x / foto.breedte) * 100 + "%";
-  image.style.top = (-foto.y / foto.hoogte) * 100 + "%";
-  photo.appendChild(image);
+  image.style.width = (100 / crop.b) * 100 + "%";
+  image.style.left = (-crop.x / crop.b) * 100 + "%";
+  image.style.top = (-crop.y / crop.h) * 100 + "%";
+  map.appendChild(image);
 
-  for (let i = 0; i < lokaal.stoelen.length; i++) {
-    const stoel = lokaal.stoelen[i];
-    const seat = makeSeat(stoel[2], i + 1);
-    seat.style.left = ((stoel[0] - foto.x) / foto.breedte) * 100 + "%";
-    seat.style.top = ((stoel[1] - foto.y) / foto.hoogte) * 100 + "%";
-    photo.appendChild(seat);
-  }
-  seatsBox.appendChild(photo);
+  const highlight = document.createElement("div");
+  highlight.className = "map-area";
+  highlight.style.left = ((area.x - crop.x) / crop.b) * 100 + "%";
+  highlight.style.top = ((area.y - crop.y) / crop.h) * 100 + "%";
+  highlight.style.width = (area.b / crop.b) * 100 + "%";
+  highlight.style.height = (area.h / crop.h) * 100 + "%";
+  map.appendChild(highlight);
 
+  seatsBox.appendChild(map);
   const free = roomPanel.clientHeight - roomPanel.querySelector(".room-header").offsetHeight - 72;
-  photo.style.maxWidth = Math.max(240, free * (foto.breedte / foto.hoogte)) + "px";
+  map.style.maxWidth = Math.max(240, free * ((crop.b * floor.verhouding) / crop.h)) + "px";
+
+  const count = lokaal.tafels;
+  const box = highlight.getBoundingClientRect();
+  let cols = 1;
+  let best = 0;
+  for (let c = 1; c <= count; c++) {
+    const r = Math.ceil(count / c);
+    const fit = Math.min(box.width / c / 62, box.height / r / 62);
+    if (fit > best) {
+      best = fit;
+      cols = c;
+    }
+  }
+  const rows = Math.ceil(count / cols);
+  const scale = Math.max(0.6, Math.min(1, best));
+  map.style.setProperty("--stoel-schaal", scale);
+  const chairs = [[-13, -19], [13, -19], [-13, 19], [13, 19]];
+
+  let number = 1;
+  for (let i = 0; i < count; i++) {
+    const x = ((area.x - crop.x + (area.b * ((i % cols) + 0.5)) / cols) / crop.b) * 100;
+    const y = ((area.y - crop.y + (area.h * (Math.floor(i / cols) + 0.5)) / rows) / crop.h) * 100;
+
+    const table = document.createElement("span");
+    table.className = "map-table";
+    table.style.left = x + "%";
+    table.style.top = y + "%";
+    map.appendChild(table);
+
+    for (let j = 0; j < chairs.length; j++) {
+      const seat = makeSeat(i + 1, number++);
+      seat.style.left = offset(x, chairs[j][0] * scale);
+      seat.style.top = offset(y, chairs[j][1] * scale);
+      map.appendChild(seat);
+    }
+  }
 }
 
 function openRoomPanel(lokaal, from) {
@@ -225,11 +288,11 @@ function openRoomPanel(lokaal, from) {
   roomTitle.textContent = lokaal.naam;
 
   seatsBox.innerHTML = "";
-  seatsBox.className = "room-seats " + (lokaal.foto ? "photo" : lokaal.soort);
+  seatsBox.className = "room-seats " + (lokaal.gebied ? "photo" : lokaal.soort);
   roomPanel.hidden = false;
 
-  if (lokaal.foto) {
-    buildPhotoSeats(lokaal);
+  if (lokaal.gebied) {
+    buildMapSeats(lokaal);
   } else {
     buildDrawnSeats(lokaal);
   }
@@ -401,7 +464,11 @@ function fillSeats() {
     seat.dataset.until = status.tot;
   }
 
-  roomInfo.textContent = statuses.length + " van " + seats.length + " plekken bezet · kies een lege stoel";
+  const tables = new Set(Array.from(seats, function (seat) {
+    return seat.dataset.table;
+  })).size;
+  roomInfo.textContent = currentFloor().naam + " · " + tables + (tables === 1 ? " tafel" : " tafels") +
+    (openRoom.tafelsGeteld ? "" : " (geschat)") + " · " + statuses.length + " van " + seats.length + " plekken bezet";
 }
 
 function loadStatuses() {

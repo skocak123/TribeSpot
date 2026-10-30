@@ -105,10 +105,53 @@ h1 {
 
 .map {
   position: relative;
+  width: 100%;
+  max-width: min(1100px, calc((100vh - 240px) * var(--verhouding, 2)));
+  margin: 0 auto;
   overflow: hidden;
   border: 2px solid var(--hu-blauw);
   border-radius: var(--border-radius-xl);
   background: white;
+}
+
+.map-wrap {
+  display: grid;
+  grid-template-areas: "map" "heading" "list";
+}
+
+.map-wrap .map {
+  grid-area: map;
+}
+
+.map-wrap .spot-heading {
+  grid-area: heading;
+}
+
+.map-wrap .spot-list {
+  grid-area: list;
+}
+
+@media (min-width: 1500px) {
+  .map-wrap {
+    grid-template-columns: minmax(0, 1fr) 250px;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "map heading" "map list";
+    column-gap: 20px;
+    align-items: start;
+  }
+
+  .map-wrap .map {
+    max-width: calc((100vh - 240px) * var(--verhouding, 2));
+    margin: 0;
+  }
+
+  .map-wrap .spot-heading {
+    margin-top: 0;
+  }
+
+  .map-wrap .spot-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .map-inner {
@@ -355,10 +398,35 @@ h1 {
   height: auto;
 }
 
+.map-area {
+  position: absolute;
+  border: 3px solid var(--kaart-blauw);
+  border-radius: 4px;
+  background: #0076a826;
+}
+
+.map-table {
+  position: absolute;
+  width: 42px;
+  height: 18px;
+  border: 1px solid #b9a888;
+  border-radius: 4px;
+  background: #e8dcc8;
+  transform: translate(-50%, -50%) scale(var(--stoel-schaal, 1));
+}
+
+.room-photo.room-map .seat {
+  transform: translate(-50%, -50%) scale(var(--stoel-schaal, 1));
+}
+
 .room-photo .seat {
   position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 22px;
   height: 22px;
+  font-size: 10px;
   border-color: var(--grijs);
   box-shadow: 0 1px 3px #0005;
   transform: translate(-50%, -50%);
@@ -474,6 +542,11 @@ h1 {
   padding: 0;
   box-sizing: border-box;
   font: inherit;
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 14px;
+  color: var(--tekst);
+  text-align: center;
   border: 2px dashed var(--rand);
   border-radius: 50%;
   background: white;
@@ -671,6 +744,7 @@ h1 {
   }
 
   .map {
+    max-width: none;
     overflow-x: auto;
   }
 
