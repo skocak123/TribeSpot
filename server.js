@@ -176,14 +176,15 @@ app.post('/api/wachtwoord-vergeten', async (req, res) => {
         [gebruiker.id, tokenHash, verlooptOp]
       );
 
-      const link = `http://localhost:${POORT}/nieuw-wachtwoord.html?token=${token}`;
+      const basisUrl = process.env.APP_URL || `http://localhost:${POORT}`;
+      const link = `${basisUrl}/nieuw-wachtwoord.html?token=${token}`;
 
       if (!process.env.MAIL_HOST) {
         console.log('Geen MAIL_HOST in .env, resetlink voor ' + email + ': ' + link);
       } else {
         try {
           await transporter.sendMail({
-            from: '"TribeSpot" <noreply@tribespot.nl>',
+            from: process.env.MAIL_FROM || process.env.MAIL_USER,
             to: email,
             subject: 'Nieuw wachtwoord kiezen',
             text: `Aanvraag voor het nieuwe wachtwoord\n\nKlik op de knop om een nieuw wachtwoord te kiezen :\n${link}\n\n`,
