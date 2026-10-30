@@ -2,8 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const bcrypt = require('bcrypt');
-const { query } = require('./database');
-const verdiepingen = require('./public/js/lokalen');
+const { query, lokalenKlaar } = require('./database');
 const session = require('express-session')
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
@@ -245,6 +244,31 @@ app.post('/api/nieuw-wachtwoord', async (req, res) => {
   }
 });
 
+app.get('/api/lokalen', alleenIngelogdApi, async (req, res) => {
+  try {
+    const verdiepingen = await query('SELECT nummer, naam, plaatje, verhouding FROM verdiepingen ORDER BY nummer');
+    const lokalen = await query('SELECT * FROM lokalen ORDER BY volgorde');
+
+    verdiepingen.forEach((verdieping) => {
+      verdieping.lokalen = lokalen
+        .filter((lokaal) => lokaal.verdieping === verdieping.nummer)
+        .map((lokaal) => ({
+          naam: lokaal.naam,
+          x: lokaal.x,
+          y: lokaal.y,
+          gebied: { x: lokaal.gebied_x, y: lokaal.gebied_y, b: lokaal.gebied_b, h: lokaal.gebied_h },
+          soort: lokaal.soort,
+          tafels: lokaal.tafels,
+          tafelsGeteld: Boolean(lokaal.tafels_geteld),
+          kort: lokaal.kort
+        }));
+    });
+    res.json(verdiepingen);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
 app.get('/api/statussen', async (req, res) => {
   try {
     const rijen = await query(`SELECT gebruikers.naam, lokalen.naam AS lokaal, lokalen.verdieping, statussen.plek,
@@ -280,17 +304,13 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
     return res.status(400).json({ fout: 'Niet alles is ingevuld.' });
   }
 
-  const stilteplek = verdiepingen.some((verdieping) =>
-    verdieping.lokalen.some((plaats) => plaats.naam === lokaal && plaats.soort === 'stilte')
-  );
-  if (stilteplek && beschikbaarheid !== 'focus') {
-    return res.status(400).json({ fout: 'Op een stilteplek kun je alleen Focus kiezen.' });
-  }
-
   try {
-    const lokalen = await query('SELECT id FROM lokalen WHERE naam = ?', [lokaal]);
+    const lokalen = await query('SELECT id, soort FROM lokalen WHERE naam = ?', [lokaal]);
     if (lokalen.length === 0) {
       return res.status(404).json({ fout: 'Dit lokaal bestaat niet.' });
+    }
+    if (lokalen[0].soort === 'stilte' && beschikbaarheid !== 'focus') {
+      return res.status(400).json({ fout: 'Op een stilteplek kun je alleen Focus kiezen.' });
     }
     const lokaalId = lokalen[0].id;
 
@@ -322,6 +342,8 @@ app.delete('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-app.listen(POORT, () => {
-  console.log(`Server draait op http://localhost:${POORT}`);
+lokalenKlaar.then(() => {
+  app.listen(POORT, () => {
+    console.log(`Server draait op http://localhost:${POORT}`);
+  });
 });

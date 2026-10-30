@@ -41,6 +41,13 @@ if (DB_TYPE === 'mysql') {
       verdieping INTEGER NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS verdiepingen (
+      nummer INTEGER PRIMARY KEY,
+      naam TEXT NOT NULL,
+      plaatje TEXT NOT NULL,
+      verhouding REAL NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS statussen (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       gebruiker_id INTEGER NOT NULL UNIQUE REFERENCES gebruikers(id) ON DELETE CASCADE,
@@ -61,6 +68,27 @@ if (DB_TYPE === 'mysql') {
     );
   `);
 
+  // Een bestaande database mist deze kolommen nog, CREATE TABLE IF NOT EXISTS voegt ze niet toe.
+  const nieuweKolommen = {
+    x: 'REAL',
+    y: 'REAL',
+    gebied_x: 'REAL',
+    gebied_y: 'REAL',
+    gebied_b: 'REAL',
+    gebied_h: 'REAL',
+    soort: "TEXT NOT NULL DEFAULT 'werkplek'",
+    tafels: 'INTEGER NOT NULL DEFAULT 0',
+    tafels_geteld: 'INTEGER NOT NULL DEFAULT 0',
+    kort: 'TEXT',
+    volgorde: 'INTEGER NOT NULL DEFAULT 0'
+  };
+  const bestaandeKolommen = db.pragma('table_info(lokalen)').map((kolom) => kolom.name);
+  for (const [naam, type] of Object.entries(nieuweKolommen)) {
+    if (!bestaandeKolommen.includes(naam)) {
+      db.exec(`ALTER TABLE lokalen ADD COLUMN ${naam} ${type}`);
+    }
+  }
+
   query = async (sql, waarden = []) => {
     const opdracht = db.prepare(sql);
     if (opdracht.reader) return opdracht.all(waarden);
@@ -75,17 +103,51 @@ console.log('Database: ' + DB_TYPE);
 
 const verdiepingen = require('./public/js/lokalen');
 
-(async () => {
+// lokalen.js is de startlijst: bij elke start komt de database daarmee overeen.
+const lokalenKlaar = (async () => {
+  const namen = [];
+  let volgorde = 0;
+
   for (const verdieping of verdiepingen) {
+    const verdiepingWaarden = [verdieping.naam, verdieping.plaatje, verdieping.verhouding, verdieping.nummer];
+    const verdiepingBestaat = await query('SELECT nummer FROM verdiepingen WHERE nummer = ?', [verdieping.nummer]);
+    if (verdiepingBestaat.length === 0) {
+      await query('INSERT INTO verdiepingen (naam, plaatje, verhouding, nummer) VALUES (?, ?, ?, ?)', verdiepingWaarden);
+    } else {
+      await query('UPDATE verdiepingen SET naam = ?, plaatje = ?, verhouding = ? WHERE nummer = ?', verdiepingWaarden);
+    }
+
     for (const lokaal of verdieping.lokalen) {
+      namen.push(lokaal.naam);
+      volgorde++;
+
+      const waarden = [
+        verdieping.nummer, lokaal.x, lokaal.y,
+        lokaal.gebied.x, lokaal.gebied.y, lokaal.gebied.b, lokaal.gebied.h,
+        lokaal.soort, lokaal.tafels, lokaal.tafelsGeteld ? 1 : 0, lokaal.kort ?? null, volgorde,
+        lokaal.naam
+      ];
       const bestaat = await query('SELECT id FROM lokalen WHERE naam = ?', [lokaal.naam]);
       if (bestaat.length === 0) {
-        await query('INSERT INTO lokalen (naam, verdieping) VALUES (?, ?)', [lokaal.naam, verdieping.nummer]);
+        await query(`INSERT INTO lokalen (verdieping, x, y, gebied_x, gebied_y, gebied_b, gebied_h,
+          soort, tafels, tafels_geteld, kort, volgorde, naam) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, waarden);
+      } else {
+        await query(`UPDATE lokalen SET verdieping = ?, x = ?, y = ?, gebied_x = ?, gebied_y = ?, gebied_b = ?, gebied_h = ?,
+          soort = ?, tafels = ?, tafels_geteld = ?, kort = ?, volgorde = ? WHERE naam = ?`, waarden);
       }
     }
   }
+
+  // Oude lokalen opruimen. Statussen eerst, want die verwijzen naar het lokaal.
+  const alleLokalen = await query('SELECT id, naam FROM lokalen');
+  for (const lokaal of alleLokalen) {
+    if (!namen.includes(lokaal.naam)) {
+      await query('DELETE FROM statussen WHERE lokaal_id = ?', [lokaal.id]);
+      await query('DELETE FROM lokalen WHERE id = ?', [lokaal.id]);
+    }
+  }
 })().catch((err) => {
-  console.error('Lokalen klaarzetten mislukt:', err.message);
+  console.error('Lokalen klaarzetten mislukt (gebruik je MySQL? Importeer dan database/plattegrondimport.sql opnieuw):', err.message);
 });
 
-module.exports = { query };
+module.exports = { query, lokalenKlaar };

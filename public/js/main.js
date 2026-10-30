@@ -18,13 +18,16 @@ const layouts = {
   stilte: { table: "desk-row", tables: 2, seats: 3 },
 };
 
+let verdiepingen = [];
 let allStatuses = [];
 let floorStatuses = [];
 let openRoom = null;
 let openedFrom = null;
 
 function currentFloor() {
-  return verdiepingen[Number(floorMenu.value)];
+  return verdiepingen.find(function (verdieping) {
+    return verdieping.nummer === Number(floorMenu.value);
+  });
 }
 
 function statusesIn(naam) {
@@ -513,9 +516,40 @@ function loadOnline() {
     });
 }
 
-showFloor();
-loadStatuses();
-loadOnline();
+function fillFloorMenu() {
+  for (let i = 0; i < verdiepingen.length; i++) {
+    const option = document.createElement("option");
+    option.value = verdiepingen[i].nummer;
+    option.textContent = verdiepingen[i].naam;
+    floorMenu.appendChild(option);
+  }
+}
+
+fetch("/api/lokalen")
+  .then(function (response) {
+    if (response.status === 401) return null;
+    if (!response.ok) throw new Error("Lokalen ophalen mislukt");
+    return response.json();
+  })
+  .then(function (data) {
+    if (data === null) return;
+
+    verdiepingen = data;
+    fillFloorMenu();
+    showFloor();
+    loadStatuses();
+    loadOnline();
+
+    setInterval(function () {
+      if (chosenSeat === null) {
+        loadStatuses();
+        loadOnline();
+      }
+    }, 60000);
+  })
+  .catch(function () {
+    alert("Kan de lokalen niet ophalen. Draait de server?");
+  });
 
 for (let i = 0; i < statusButtons.length; i++) {
   statusButtons[i].addEventListener("click", function () {
@@ -605,10 +639,3 @@ leaveButton.addEventListener("click", function () {
     loadOnline();
   });
 });
-
-setInterval(function () {
-  if (chosenSeat === null) {
-    loadStatuses();
-    loadOnline();
-  }
-}, 60000);
