@@ -14,7 +14,7 @@ async function laadNavProfiel() {
         <span id="nav-email"></span>
       </div>
       <hr>
-      <a href="profiel.html">Profiel aanpassen</a>
+      <a href="profiel.html">Mijn profiel</a>
       <a href="regelspagina.html">Regels</a>
       <button id="afmelden">Afmelden</button>
     </div>
