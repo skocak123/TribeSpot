@@ -87,6 +87,52 @@ app.delete('/api/statussen', async (req, res) => {
   }
 });
 
+app.get('/api/berichten/:naam', async (req, res) => {
+  try {
+    const [gebruikers] = await db.promise().query('SELECT id FROM gebruikers WHERE naam = ?', [req.params.naam]);
+    if (gebruikers.length === 0) {
+      return res.status(404).json({ fout: 'Deze gebruiker bestaat niet.' });
+    }
+    const anderId = gebruikers[0].id;
+
+    const [berichten] = await db.promise().query(
+      `SELECT tekst, van_id = ? AS van_mij, TIME_FORMAT(verstuurd_op, '%H:%i') AS tijd
+      FROM berichten
+      WHERE (van_id = ? AND naar_id = ?) OR (van_id = ? AND naar_id = ?)
+      ORDER BY verstuurd_op, id`,
+      [mijnGebruikerId, mijnGebruikerId, anderId, anderId, mijnGebruikerId]
+    );
+    res.json(berichten);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ fout: 'Er ging iets mis met de database.' });
+  }
+});
+
+app.post('/api/berichten', async (req, res) => {
+  const { naar, tekst } = req.body;
+
+  if (!naar || !tekst || !tekst.trim()) {
+    return res.status(400).json({ fout: 'Niet alles is ingevuld.' });
+  }
+
+  try {
+    const [gebruikers] = await db.promise().query('SELECT id FROM gebruikers WHERE naam = ?', [naar]);
+    if (gebruikers.length === 0) {
+      return res.status(404).json({ fout: 'Deze gebruiker bestaat niet.' });
+    }
+
+    await db.promise().query(
+      'INSERT INTO berichten (van_id, naar_id, tekst) VALUES (?, ?, ?)',
+      [mijnGebruikerId, gebruikers[0].id, tekst.trim()]
+    );
+    res.json({ gelukt: true });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ fout: 'Er ging iets mis met de database.' });
+  }
+});
+
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
 } )

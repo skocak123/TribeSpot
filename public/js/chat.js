@@ -6,13 +6,17 @@ const verstuurKnop = document.querySelector(".chat-verstuur");
 const onlineLijst = document.querySelector(".online-gebruikers");
 const offlineLijst = document.querySelector(".offline-gebruikers");
 
-// Berichten per gebruiker. Worden nog niet opgeslagen in de database.
-const gesprekken = {};
+// Er is nog geen inlogsysteem, dus net als in main.js zijn we altijd selim.
+const mijnNaam = "selim";
+
 let gekozenGebruiker = null;
 
 function vulLijst(lijst, gebruikers) {
   lijst.innerHTML = "";
   for (const gebruiker of gebruikers) {
+    if (gebruiker.naam === mijnNaam) {
+      continue;
+    }
     const li = document.createElement("li");
     li.textContent = gebruiker.naam;
     if (gebruiker.naam === gekozenGebruiker) {
@@ -50,12 +54,34 @@ function kiesGebruiker(naam) {
     li.classList.toggle("actief", li.textContent === naam);
   });
 
-  toonBerichten();
+  berichtenVak.innerHTML = "";
+  laadBerichten();
 }
 
-function toonBerichten() {
+function laadBerichten() {
+  if (!gekozenGebruiker) {
+    return;
+  }
+  const naam = gekozenGebruiker;
+  fetch("/api/berichten/" + encodeURIComponent(naam))
+    .then(function (res) {
+      return res.json();
+    })
+    .then(function (berichten) {
+      // Ondertussen kan er al iemand anders gekozen zijn.
+      if (naam === gekozenGebruiker) {
+        toonBerichten(berichten);
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
+
+function toonBerichten(berichten) {
+  const wasOnderaan =
+    berichtenVak.scrollHeight - berichtenVak.scrollTop - berichtenVak.clientHeight < 50;
   berichtenVak.innerHTML = "";
-  const berichten = gesprekken[gekozenGebruiker] || [];
 
   if (berichten.length === 0) {
     const leeg = document.createElement("p");
@@ -68,7 +94,7 @@ function toonBerichten() {
   for (const bericht of berichten) {
     const div = document.createElement("div");
     div.className = "bericht";
-    if (bericht.vanMij) {
+    if (bericht.van_mij) {
       div.classList.add("van-mij");
     }
     div.textContent = bericht.tekst;
@@ -80,7 +106,9 @@ function toonBerichten() {
 
     berichtenVak.appendChild(div);
   }
-  berichtenVak.scrollTop = berichtenVak.scrollHeight;
+  if (wasOnderaan) {
+    berichtenVak.scrollTop = berichtenVak.scrollHeight;
+  }
 }
 
 invoerForm.addEventListener("submit", function (event) {
@@ -90,17 +118,26 @@ invoerForm.addEventListener("submit", function (event) {
     return;
   }
 
-  if (!gesprekken[gekozenGebruiker]) {
-    gesprekken[gekozenGebruiker] = [];
-  }
-  gesprekken[gekozenGebruiker].push({
-    tekst: tekst,
-    vanMij: true,
-    tijd: new Date().toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }),
-  });
-
-  tekstInput.value = "";
-  toonBerichten();
+  fetch("/api/berichten", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ naar: gekozenGebruiker, tekst: tekst }),
+  })
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error("Versturen mislukt");
+      }
+      tekstInput.value = "";
+      berichtenVak.scrollTop = berichtenVak.scrollHeight;
+      laadBerichten();
+    })
+    .catch(function (err) {
+      console.log(err);
+      alert("Het bericht kon niet worden verstuurd.");
+    });
 });
 
 laadGebruikers();
+
+// Elke 3 seconden kijken of er nieuwe berichten zijn.
+setInterval(laadBerichten, 3000);
