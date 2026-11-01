@@ -1,8 +1,153 @@
-.chat{
-    border: none;
-    height: 100vh;
-    width:60%;
-    border-radius: var(--border-radius-xl);
-    Background:white ;
+.chat-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 14px;
+    padding: 14px;
+    height: calc(100vh - 77px);
+    box-sizing: border-box;
+}
 
+.chat,
+.gebruikers {
+    border: 1px solid var(--rand);
+    border-radius: var(--border-radius-xl);
+    background: white;
+    min-height: 0;
+}
+
+.chat {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--rand);
+}
+
+.chat-berichten {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 22px;
+    overflow-y: auto;
+}
+
+.chat-leeg {
+    margin: auto;
+    color: var(--grijs);
+}
+
+.bericht {
+    max-width: 65%;
+    padding: 10px 14px;
+    border-radius: var(--border-radius-xl);
+    background: var(--lichtblauw);
+    word-wrap: break-word;
+}
+
+.bericht.van-mij {
+    align-self: flex-end;
+    background: var(--hu-blauw);
+    color: white;
+}
+
+.bericht .tijd {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.chat-invoer {
+    display: flex;
+    gap: 10px;
+    padding: 14px 22px;
+    border-top: 1px solid var(--rand);
+}
+
+.chat-tekst {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid var(--rand);
+    border-radius: var(--border-radius-round);
+    font-size: 15px;
+}
+
+.chat-verstuur {
+    padding: 10px 24px;
+    border: none;
+    border-radius: var(--border-radius-round);
+    background: var(--hu-blauw);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.chat-verstuur:hover:not(:disabled) {
+    background: var(--hu-rood);
+}
+
+.chat-tekst:disabled,
+.chat-verstuur:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.gebruikers {
+    padding: 18px;
+    overflow-y: auto;
+}
+
+.gebruikers h2 {
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+.gebruikers-lijst {
+    list-style: none;
+    margin-bottom: 18px;
+}
+
+.gebruikers-lijst li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--border-radius-l);
+    cursor: pointer;
+}
+
+.gebruikers-lijst li::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--grijs);
+}
+
+.online-gebruikers li::before {
+    background: var(--hu-groen);
+}
+
+.gebruikers-lijst li:hover {
+    background: var(--lichtblauw);
+}
+
+.gebruikers-lijst li.actief {
+    background: var(--hu-blauw);
+    color: white;
+}
+
+@media (max-width: 700px) {
+    .chat-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+    }
+
+    .gebruikers {
+        max-height: 200px;
+    }
 }
