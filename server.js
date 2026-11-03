@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 if (!process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET ontbreekt in .env');
@@ -49,6 +49,31 @@ function alleenIngelogdApi(req, res, next) {
 function databaseFout(res, err) {
   console.log(err);
   res.status(500).json({ fout: 'Er ging iets mis met de database.' });
+}
+
+const geldigeFoto = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+
+async function zorgVoorFotoKolom() {
+  try {
+    await query('ALTER TABLE gebruikers ADD COLUMN foto MEDIUMTEXT');
+  } catch (err) {
+    if (!/duplicate column/i.test(err.message)) throw err;
+  }
+}
+async function zorgVoorVerbindingen() {
+  await query(`CREATE TABLE IF NOT EXISTS verbindingen (
+    gebruiker_a INT NOT NULL,
+    gebruiker_b INT NOT NULL,
+    sinds DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (gebruiker_a, gebruiker_b),
+    FOREIGN KEY (gebruiker_a) REFERENCES gebruikers(id) ON DELETE CASCADE,
+    FOREIGN KEY (gebruiker_b) REFERENCES gebruikers(id) ON DELETE CASCADE
+  )`);
+  try {
+    await query('ALTER TABLE statussen ADD COLUMN tafel INT');
+  } catch (err) {
+    if (!/duplicate column/i.test(err.message)) throw err;
+  }
 }
 
 app.get('/', alleenIngelogd, (req, res) => {
@@ -143,12 +168,97 @@ app.post('/api/inloggen', async (req, res) => {
 
 app.get('/api/ik', alleenIngelogdApi, async (req, res) => {
   try {
-    const [gebruiker] = await query('SELECT id, email, naam FROM gebruikers WHERE id = ?', [req.session.gebruikerId]);
+    const [gebruiker] = await query('SELECT id, email, naam, foto FROM gebruikers WHERE id = ?', [req.session.gebruikerId]);
     res.json(gebruiker);
   } catch (err) {
     databaseFout(res, err);
   }
 });
+
+app.get('/api/profiel', alleenIngelogdApi, async (req, res) => {
+  try {
+    const [gebruiker] = await query(
+      'SELECT naam, tribe, studiejaar, interesses, helpen, foto FROM gebruikers WHERE id = ?',
+      [req.session.gebruikerId]
+    );
+    res.json(gebruiker);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+app.get('/api/verbindingen', alleenIngelogdApi, async (req, res) => {
+  const ik = req.session.gebruikerId;
+  try {
+    const rijen = await query(
+      `SELECT gebruikers.naam, gebruikers.tribe
+       FROM verbindingen
+       JOIN gebruikers ON gebruikers.id = CASE WHEN verbindingen.gebruiker_a = ? THEN verbindingen.gebruiker_b ELSE verbindingen.gebruiker_a END
+       WHERE verbindingen.gebruiker_a = ? OR verbindingen.gebruiker_b = ?
+       ORDER BY gebruikers.naam`,
+      [ik, ik, ik]
+    );
+    res.json(rijen);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+
+app.put('/api/profiel', alleenIngelogdApi, async (req, res) => {
+  const { naam, studiejaar, tribe, interesses, helpen, foto } = req.body;
+
+  // foto: weglaten = niet veranderen, null = verwijderen, anders een kleine afbeelding als data-URL
+  if (foto !== undefined && foto !== null &&
+      (typeof foto !== 'string' || foto.length > 500000 || !geldigeFoto.test(foto))) {
+    return res.status(400).json({ fout: 'Deze foto kan niet worden opgeslagen.' });
+  }
+
+  if (!naam || !naam.trim()) {
+    return res.status(400).json({ fout: 'Vul je naam in.' });
+  }
+  if (![1, 2, 3, 4].includes(Number(studiejaar))) {
+    return res.status(400).json({ fout: 'Kies een geldig studiejaar.' });
+  }
+  if (!['A', 'B', 'C'].includes(tribe)) {
+    return res.status(400).json({ fout: 'Kies een tribe.' });
+  }
+
+  const toegestaan = ['Games', 'Muziek', 'Sport', 'Design', 'Code'];
+  const schoneInteresses = (Array.isArray(interesses) ? interesses : [])
+    .filter((i) => toegestaan.includes(i))
+    .join(',');
+
+  try {
+    await query(
+      'UPDATE gebruikers SET naam = ?, studiejaar = ?, tribe = ?, interesses = ?, helpen = ? WHERE id = ?',
+      [naam.trim(), Number(studiejaar), tribe, schoneInteresses, (helpen || '').trim().slice(0, 200), req.session.gebruikerId]
+    );
+    if (foto !== undefined) {
+      await query('UPDATE gebruikers SET foto = ? WHERE id = ?', [foto, req.session.gebruikerId]);
+    }
+    res.json({ bericht: 'Profiel opgeslagen!' });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+app.delete('/api/account', alleenIngelogdApi, async (req, res) => {
+  const { bevestiging } = req.body;
+
+  if (bevestiging !== 'VERWIJDEREN') {
+    return res.status(400).json({ fout: 'Typ VERWIJDEREN in hoofdletters om je account te verwijderen.' });
+  }
+
+  try {
+    await query('DELETE FROM gebruikers WHERE id = ?', [req.session.gebruikerId]);
+    req.session.destroy(() => {
+      res.json({ bericht: 'Account verwijderd.' });
+    });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
 
 app.post('/api/uitloggen', (req, res) => {
   req.session.destroy(() => {
@@ -245,8 +355,26 @@ app.post('/api/nieuw-wachtwoord', async (req, res) => {
   }
 });
 
+function tijdVanNu() {
+  const nu = new Date();
+  return String(nu.getHours()).padStart(2, '0') + ':' + String(nu.getMinutes()).padStart(2, '0');
+}
+
+function vandaagBegin() {
+  const nu = new Date();
+  return nu.getFullYear() + '-' + String(nu.getMonth() + 1).padStart(2, '0') + '-' +
+    String(nu.getDate()).padStart(2, '0') + ' 00:00:00';
+}
+
+async function verwijderVerlopenStatussen() {
+  await query('DELETE FROM statussen WHERE tot <= ? OR gedeeld_op < ?', [tijdVanNu(), vandaagBegin()]);
+}
+
+const geldigeTijd = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 app.get('/api/statussen', async (req, res) => {
   try {
+    await verwijderVerlopenStatussen();
     const rijen = await query(`SELECT gebruikers.naam, lokalen.naam AS lokaal, lokalen.verdieping, statussen.plek,
       statussen.werkt_aan, statussen.beschikbaarheid, statussen.tot
       FROM statussen
@@ -264,6 +392,7 @@ app.get('/api/statussen', async (req, res) => {
 
 app.get('/api/online', async (req, res) => {
   try {
+    await verwijderVerlopenStatussen();
     const online = await query('SELECT naam FROM gebruikers WHERE id IN (SELECT gebruiker_id FROM statussen) ORDER BY naam');
     const offline = await query('SELECT naam FROM gebruikers WHERE id NOT IN (SELECT gebruiker_id FROM statussen) ORDER BY naam');
     res.json({ online: online, offline: offline });
@@ -273,11 +402,14 @@ app.get('/api/online', async (req, res) => {
 });
 
 app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
-  const { lokaal, plek, werkt_aan, beschikbaarheid, tot } = req.body;
+  const { lokaal, plek, werkt_aan, beschikbaarheid, tot, tafel } = req.body;
   const mijnGebruikerId = req.session.gebruikerId;
 
   if (!lokaal || !plek || !beschikbaarheid || !tot) {
     return res.status(400).json({ fout: 'Niet alles is ingevuld.' });
+  }
+  if (!geldigeTijd.test(tot) || tot <= tijdVanNu()) {
+    return res.status(400).json({ fout: 'Kies een tijd die later is dan nu.' });
   }
 
   const stilteplek = verdiepingen.some((verdieping) =>
@@ -288,6 +420,7 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 
   try {
+    await verwijderVerlopenStatussen();
     const lokalen = await query('SELECT id FROM lokalen WHERE naam = ?', [lokaal]);
     if (lokalen.length === 0) {
       return res.status(404).json({ fout: 'Dit lokaal bestaat niet.' });
@@ -304,9 +437,25 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
 
     await query('DELETE FROM statussen WHERE gebruiker_id = ?', [mijnGebruikerId]);
     await query(
-      'INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot, plek) VALUES (?, ?, ?, ?, ?, ?)',
-      [mijnGebruikerId, lokaalId, werkt_aan, beschikbaarheid, tot, plek]
-    );
+              'INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot, plek, tafel) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [mijnGebruikerId, lokaalId, werkt_aan, beschikbaarheid, tot, plek, tafel || null]
+      );
+      
+    if (tafel) {
+      const tafelgenoten = await query(
+        'SELECT gebruiker_id FROM statussen WHERE lokaal_id = ? AND tafel = ? AND gebruiker_id != ?',
+        [lokaalId, tafel, mijnGebruikerId]
+      );
+      for (const genoot of tafelgenoten) {
+        const a = Math.min(mijnGebruikerId, genoot.gebruiker_id);
+        const b = Math.max(mijnGebruikerId, genoot.gebruiker_id);
+        const bestaat = await query('SELECT gebruiker_a FROM verbindingen WHERE gebruiker_a = ? AND gebruiker_b = ?', [a, b]);
+        if (bestaat.length === 0) {
+          await query('INSERT INTO verbindingen (gebruiker_a, gebruiker_b) VALUES (?, ?)', [a, b]);
+        }
+      }
+    }
+
     res.json({ gelukt: true });
   } catch (err) {
     databaseFout(res, err);
@@ -322,6 +471,36 @@ app.delete('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-app.listen(POORT, () => {
-  console.log(`Server draait op http://localhost:${POORT}`);
+app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
+  try {
+    await verwijderVerlopenStatussen();
+    const [status] = await query('SELECT tot FROM statussen WHERE gebruiker_id = ?', [req.session.gebruikerId]);
+    res.json(status ? { tot: String(status.tot).slice(0, 5) } : null);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
+  const { tot } = req.body;
+
+  if (!geldigeTijd.test(tot || '') || tot <= tijdVanNu()) {
+    return res.status(400).json({ fout: 'Kies een tijd die later is dan nu.' });
+  }
+
+  try {
+    const resultaat = await query('UPDATE statussen SET tot = ? WHERE gebruiker_id = ?', [tot, req.session.gebruikerId]);
+    if (resultaat.changes === 0) {
+      return res.status(404).json({ fout: 'Je hebt op dit moment geen plek.' });
+    }
+    res.json({ gelukt: true });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(() => {
+  app.listen(POORT, () => {
+    console.log(`Server draait op http://localhost:${POORT}`);
+  });
 });

@@ -15,7 +15,8 @@ CREATE TABLE gebruikers (
     studiejaar INT NOT NULL,
     tribe VARCHAR(1) NOT NULL,
     interesses VARCHAR(255) NOT NULL DEFAULT '',
-    helpen VARCHAR(200) NOT NULL DEFAULT ''
+    helpen VARCHAR(200) NOT NULL DEFAULT '',
+    foto MEDIUMTEXT
 );
 
 CREATE TABLE lokalen (
