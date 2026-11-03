@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const { query } = require('./database');
+const verdiepingen = require('./public/js/lokalen');
 const session = require('express-session')
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
@@ -277,6 +278,13 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
 
   if (!lokaal || !plek || !beschikbaarheid || !tot) {
     return res.status(400).json({ fout: 'Niet alles is ingevuld.' });
+  }
+
+  const stilteplek = verdiepingen.some((verdieping) =>
+    verdieping.lokalen.some((plaats) => plaats.naam === lokaal && plaats.soort === 'stilte')
+  );
+  if (stilteplek && beschikbaarheid !== 'focus') {
+    return res.status(400).json({ fout: 'Op een stilteplek kun je alleen Focus kiezen.' });
   }
 
   try {

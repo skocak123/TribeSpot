@@ -49,6 +49,8 @@ h1 {
 .campus {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  --kaart-blauw: #0076a8;
   padding: 22px;
 }
 
@@ -102,14 +104,346 @@ h1 {
 }
 
 .map {
-  display: grid;
-  flex: 1;
-  min-height: 480px;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: 1fr 1fr;
+  position: relative;
+  width: 100%;
+  max-width: min(1100px, calc((100vh - 240px) * var(--verhouding, 2)));
+  margin: 0 auto;
   overflow: hidden;
   border: 2px solid var(--hu-blauw);
   border-radius: var(--border-radius-xl);
+  background: white;
+}
+
+.map-wrap {
+  display: grid;
+  grid-template-areas: "map" "heading" "list";
+}
+
+.map-wrap .map {
+  grid-area: map;
+}
+
+.map-wrap .spot-heading {
+  grid-area: heading;
+}
+
+.map-wrap .spot-list {
+  grid-area: list;
+}
+
+@media (min-width: 1500px) {
+  .map-wrap {
+    grid-template-columns: minmax(0, 1fr) 250px;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "map heading" "map list";
+    column-gap: 20px;
+    align-items: start;
+  }
+
+  .map-wrap .map {
+    max-width: calc((100vh - 240px) * var(--verhouding, 2));
+    margin: 0;
+  }
+
+  .map-wrap .spot-heading {
+    margin-top: 0;
+  }
+
+  .map-wrap .spot-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.map-inner {
+  position: relative;
+}
+
+.map:has(.room-panel:not([hidden])) {
+  overflow: hidden;
+}
+
+.map-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.map-rooms {
+  position: absolute;
+  inset: 0;
+  --marker-half: 46px;
+}
+
+.room-marker {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 2px solid white;
+  border-radius: var(--border-radius-round);
+  background-color: var(--kaart-blauw);
+  box-shadow: 0 1px 4px #0004;
+  color: white;
+  font: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.room-marker.stilte {
+  border-color: var(--kaart-blauw);
+  background-color: white;
+  color: var(--kaart-blauw);
+}
+
+.room-marker:hover,
+.room-marker.stilte:hover {
+  border-color: white;
+  background-color: var(--hu-rood);
+  color: white;
+}
+
+.room-marker:focus-visible,
+.spot-button:focus-visible,
+.seat:focus-visible,
+.room-close:focus-visible {
+  outline: 3px solid black;
+  outline-offset: 2px;
+}
+
+.room-panel h2:focus {
+  outline: none;
+}
+
+.spot-button .spot-label {
+  min-width: 30px;
+  padding: 2px 6px;
+  border: 2px solid var(--kaart-blauw);
+  border-radius: var(--border-radius-round);
+  background-color: var(--kaart-blauw);
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+
+.spot-button.stilte .spot-label {
+  background-color: white;
+  color: var(--kaart-blauw);
+}
+
+.spot-name {
+  flex: 1;
+}
+
+.marker-count {
+  margin-left: 2px;
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.map-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-pill {
+  padding: 2px 8px;
+  border: 2px solid var(--kaart-blauw);
+  border-radius: var(--border-radius-round);
+  background-color: var(--kaart-blauw);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.legend-pill.stilte {
+  background-color: white;
+  color: var(--kaart-blauw);
+}
+
+.spot-heading {
+  margin: 18px 0 8px;
+  font-size: 16px;
+}
+
+.spot-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spot-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--rand);
+  border-left: 4px solid var(--kaart-blauw);
+  border-radius: var(--border-radius-l);
+  background: white;
+  color: var(--tekst);
+  font: inherit;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+}
+
+.spot-button.stilte {
+  border-left-style: dashed;
+}
+
+.spot-button:hover {
+  border-color: var(--kaart-blauw);
+}
+
+.spot-button .marker-dots .status-dot {
+  border: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.marker-dots {
+  display: flex;
+  gap: 2px;
+}
+
+.marker-dots .status-dot {
+  border: 1.5px solid white;
+}
+
+.room-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  padding: 14px;
+  background: white;
+}
+
+.room-panel[hidden] {
+  display: none;
+}
+
+.room-close {
+  align-self: flex-start;
+  margin-top: 0;
+}
+
+.room-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.room-header h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.room-info {
+  margin: 2px 0 0;
+  color: var(--grijs);
+  font-size: 13px;
+}
+
+.room-panel .room {
+  flex: 1;
+  padding: 14px;
+  border: 0;
+}
+
+.room-seats.photo {
+  display: block;
+}
+
+.room-photo {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 2px solid var(--rand);
+  border-radius: var(--border-radius-l);
+}
+
+.room-photo img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+}
+
+.map-area {
+  position: absolute;
+  border: 3px solid var(--kaart-blauw);
+  border-radius: 4px;
+  background: #0076a826;
+}
+
+.map-table {
+  position: absolute;
+  width: 42px;
+  height: 18px;
+  border: 1px solid #b9a888;
+  border-radius: 4px;
+  background: #e8dcc8;
+  transform: translate(-50%, -50%) scale(var(--stoel-schaal, 1));
+}
+
+.room-photo.room-map .seat {
+  transform: translate(-50%, -50%) scale(var(--stoel-schaal, 1));
+}
+
+.room-photo .seat {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+  border-color: var(--grijs);
+  box-shadow: 0 1px 3px #0005;
+  transform: translate(-50%, -50%);
+}
+
+.room-seats {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+}
+
+.room-seats.project {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-around;
 }
 
 .field-box {
@@ -164,17 +498,6 @@ h1 {
   font-size: 12px;
 }
 
-.room-four,
-.room-six {
-  border-right: 0;
-}
-
-.room-five,
-.room-six {
-  grid-column: span 2;
-  border-bottom: 0;
-}
-
 .board {
   width: 60%;
   height: 6px;
@@ -189,13 +512,6 @@ h1 {
   border-top: 12px solid #e8dcc8;
   border-radius: 4px;
   padding-top: 4px;
-}
-
-.project {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-around;
 }
 
 .group {
@@ -223,7 +539,14 @@ h1 {
   display: block;
   width: 18px;
   height: 18px;
+  padding: 0;
   box-sizing: border-box;
+  font: inherit;
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 14px;
+  color: var(--tekst);
+  text-align: center;
   border: 2px dashed var(--rand);
   border-radius: 50%;
   background: white;
@@ -408,9 +731,6 @@ h1 {
     grid-template-columns: 1fr;
   }
 
-  .campus {
-    min-height: 650px;
-  }
 }
 
 @media (max-width: 550px) {
@@ -420,8 +740,16 @@ h1 {
   }
 
   .campus {
-    min-height: 700px;
     padding: 14px;
+  }
+
+  .map {
+    max-width: none;
+    overflow-x: auto;
+  }
+
+  .map-inner {
+    width: 700px;
   }
 
   h1 {
@@ -429,30 +757,15 @@ h1 {
     font-size: 18px;
   }
 
-  .map {
-    min-height: 560px;
-    flex: none;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(3, 1fr);
+  .map-rooms {
+    --marker-half: 36px;
   }
 
-  .room:nth-child(even) {
-    border-right: 0;
+  .room-marker {
+    padding: 3px 6px;
+    font-size: 10px;
   }
-
-  .room-five,
-  .room-six {
-    grid-column: span 1;
-  }
-
-  .room-five {
-    border-right: 2px solid black;
-  }
-
-  .room-six {
-    border-right: 0;
-  }
-  }
+}
 
 .student-card {
   position: fixed;
