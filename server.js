@@ -80,7 +80,8 @@ app.get('/', alleenIngelogd, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const beveiligd = ['index.html', 'chat.html', 'profiel.html', 'kamer.html'];
+const beveiligd = ['index.html', 'chat.html', 'profiel.html', 'kamer.html',
+  'games-kamer.html', 'muziek-kamer.html', 'sport-kamer.html'];
 beveiligd.forEach((pagina) => {
   app.get('/' + pagina, alleenIngelogd, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', pagina));
@@ -472,12 +473,70 @@ app.delete('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-// ---------- STATUS VERLENGEN (van main) ----------
+// ---------- PRIVÉCHAT ----------
+// MySQL geeft een Date terug, SQLite een tekst in UTC ('2026-11-04 13:05:00')
+function tijdVan(verstuurdOp) {
+  const datum = verstuurdOp instanceof Date ? verstuurdOp : new Date(verstuurdOp.replace(' ', 'T') + 'Z');
+  return datum.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+}
+
+app.get('/api/berichten/:naam', alleenIngelogdApi, async (req, res) => {
+  const mijnGebruikerId = req.session.gebruikerId;
+
+  try {
+    const gebruikers = await query('SELECT id FROM gebruikers WHERE naam = ?', [req.params.naam]);
+    if (gebruikers.length === 0) {
+      return res.status(404).json({ fout: 'Deze gebruiker bestaat niet.' });
+    }
+    const anderId = gebruikers[0].id;
+
+    const rijen = await query(
+      `SELECT tekst, van_id = ? AS van_mij, verstuurd_op
+      FROM berichten
+      WHERE (van_id = ? AND naar_id = ?) OR (van_id = ? AND naar_id = ?)
+      ORDER BY verstuurd_op, id`,
+      [mijnGebruikerId, mijnGebruikerId, anderId, anderId, mijnGebruikerId]
+    );
+
+    res.json(rijen.map((rij) => ({
+      tekst: rij.tekst,
+      van_mij: rij.van_mij,
+      tijd: tijdVan(rij.verstuurd_op)
+    })));
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+// ---------- STATUS VERLENGEN ----------
 app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
   try {
     await verwijderVerlopenStatussen();
     const [status] = await query('SELECT tot FROM statussen WHERE gebruiker_id = ?', [req.session.gebruikerId]);
     res.json(status ? { tot: String(status.tot).slice(0, 5) } : null);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+app.post('/api/berichten', alleenIngelogdApi, async (req, res) => {
+  const { naar, tekst } = req.body;
+
+  if (!naar || !tekst || !tekst.trim()) {
+    return res.status(400).json({ fout: 'Niet alles is ingevuld.' });
+  }
+
+  try {
+    const gebruikers = await query('SELECT id FROM gebruikers WHERE naam = ?', [naar]);
+    if (gebruikers.length === 0) {
+      return res.status(404).json({ fout: 'Deze gebruiker bestaat niet.' });
+    }
+
+    await query(
+      'INSERT INTO berichten (van_id, naar_id, tekst) VALUES (?, ?, ?)',
+      [req.session.gebruikerId, gebruikers[0].id, tekst.trim()]
+    );
+    res.json({ gelukt: true });
   } catch (err) {
     databaseFout(res, err);
   }
@@ -501,23 +560,34 @@ app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-// ---------- KAMER-CHATS (van chat-ontwerp) ----------
+// ---------- KAMER-CHATS ----------
+// Eigen tabel kamer_berichten, los van de privéchat in de tabel berichten.
 const KAMERS = ['games', 'muziek', 'sport'];
 
 // tabel aanmaken als hij nog niet bestaat, en bij elke serverstart leegmaken
-query(`
-  CREATE TABLE IF NOT EXISTS berichten (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    kamer VARCHAR(20) NOT NULL,
-    gebruiker_id INT NOT NULL,
-    bericht VARCHAR(500) NOT NULL,
-    tijd TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )
-`)
-  .then(() => query('TRUNCATE TABLE berichten'))
-  .catch((err) => console.log('Tabel berichten maken of legen mislukt:', err));
+async function zorgVoorKamerBerichten() {
+  if (process.env.DB_TYPE === 'mysql') {
+    await query(`CREATE TABLE IF NOT EXISTS kamer_berichten (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      kamer VARCHAR(20) NOT NULL,
+      gebruiker_id INT NOT NULL,
+      bericht VARCHAR(500) NOT NULL,
+      tijd DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (gebruiker_id) REFERENCES gebruikers(id) ON DELETE CASCADE
+    )`);
+  } else {
+    await query(`CREATE TABLE IF NOT EXISTS kamer_berichten (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kamer TEXT NOT NULL,
+      gebruiker_id INTEGER NOT NULL REFERENCES gebruikers(id) ON DELETE CASCADE,
+      bericht TEXT NOT NULL,
+      tijd TEXT DEFAULT CURRENT_TIMESTAMP
+    )`);
+  }
+  await query('DELETE FROM kamer_berichten');
+}
 
-app.get('/api/berichten/:kamer', alleenIngelogdApi, async (req, res) => {
+app.get('/api/kamers/:kamer/berichten', alleenIngelogdApi, async (req, res) => {
   const kamer = req.params.kamer;
   if (!KAMERS.includes(kamer)) {
     return res.status(404).json({ fout: 'Deze kamer bestaat niet.' });
@@ -526,27 +596,29 @@ app.get('/api/berichten/:kamer', alleenIngelogdApi, async (req, res) => {
 
   try {
     const rijen = await query(`
-      SELECT berichten.id, berichten.bericht, berichten.tijd,
-             berichten.gebruiker_id, gebruikers.gebruikersnaam
-      FROM berichten
-      JOIN gebruikers ON berichten.gebruiker_id = gebruikers.id
-      WHERE berichten.kamer = ? AND berichten.id > ?
-      ORDER BY berichten.id DESC
+      SELECT kamer_berichten.id, kamer_berichten.bericht, kamer_berichten.tijd,
+             kamer_berichten.gebruiker_id, gebruikers.gebruikersnaam
+      FROM kamer_berichten
+      JOIN gebruikers ON kamer_berichten.gebruiker_id = gebruikers.id
+      WHERE kamer_berichten.kamer = ? AND kamer_berichten.id > ?
+      ORDER BY kamer_berichten.id DESC
       LIMIT 50
     `, [kamer, na]);
 
     rijen.reverse(); // oudste bovenaan
-    rijen.forEach((rij) => {
-      rij.ik = rij.gebruiker_id === req.session.gebruikerId;
-      delete rij.gebruiker_id;
-    });
-    res.json(rijen);
+    res.json(rijen.map((rij) => ({
+      id: rij.id,
+      bericht: rij.bericht,
+      gebruikersnaam: rij.gebruikersnaam,
+      tijd: tijdVan(rij.tijd),
+      ik: rij.gebruiker_id === req.session.gebruikerId
+    })));
   } catch (err) {
     databaseFout(res, err);
   }
 });
 
-app.post('/api/berichten/:kamer', alleenIngelogdApi, async (req, res) => {
+app.post('/api/kamers/:kamer/berichten', alleenIngelogdApi, async (req, res) => {
   const kamer = req.params.kamer;
   const bericht = (req.body.bericht || '').trim();
 
@@ -559,7 +631,7 @@ app.post('/api/berichten/:kamer', alleenIngelogdApi, async (req, res) => {
 
   try {
     await query(
-      'INSERT INTO berichten (kamer, gebruiker_id, bericht) VALUES (?, ?, ?)',
+      'INSERT INTO kamer_berichten (kamer, gebruiker_id, bericht) VALUES (?, ?, ?)',
       [kamer, req.session.gebruikerId, bericht]
     );
     res.status(201).json({ gelukt: true });
@@ -569,7 +641,7 @@ app.post('/api/berichten/:kamer', alleenIngelogdApi, async (req, res) => {
 });
 
 // ---------- SERVER STARTEN ----------
-zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(() => {
+zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(zorgVoorKamerBerichten).then(() => {
   app.listen(POORT, () => {
     console.log(`Server draait op http://localhost:${POORT}`);
   });

@@ -1,79 +1,143 @@
-(function () {
-  const box = document.getElementById('chat');
-  if (!box) return;
+const chatNaam = document.querySelector(".chat-naam");
+const berichtenVak = document.querySelector(".chat-berichten");
+const invoerForm = document.querySelector(".chat-invoer");
+const tekstInput = document.querySelector(".chat-tekst");
+const verstuurKnop = document.querySelector(".chat-verstuur");
+const onlineLijst = document.querySelector(".online-gebruikers");
+const offlineLijst = document.querySelector(".offline-gebruikers");
 
-  const kamer = box.dataset.kamer;
-  let laatsteId = 0;
+// Er is nog geen inlogsysteem, dus net als in main.js zijn we altijd selim.
+const mijnNaam = "selim";
 
-  box.innerHTML = `
-    <div class="chat-berichten"></div>
-    <form class="chat-form">
-      <input type="text" maxlength="500" placeholder="Typ een bericht..." required>
-      <button type="submit">Verstuur</button>
-    </form>
-  `;
-  const lijst = box.querySelector('.chat-berichten');
-  const form = box.querySelector('.chat-form');
-  const invoer = form.querySelector('input');
+let gekozenGebruiker = null;
 
-  function voegToe(b) {
-    const rij = document.createElement('div');
-    rij.className = 'chat-bericht' + (b.ik ? ' chat-ik' : '');
-
-    const naam = document.createElement('span');
-    naam.className = 'chat-naam';
-    naam.textContent = b.ik ? 'Jij' : b.gebruikersnaam;
-
-    const tijd = document.createElement('span');
-    tijd.className = 'chat-tijd';
-    tijd.textContent = new Date(b.tijd).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-
-    const tekst = document.createElement('p');
-    tekst.textContent = b.bericht; // textContent = veilig
-
-    rij.append(naam, tijd, tekst);
-    lijst.appendChild(rij);
-  }
-
-  async function haalOp() {
-    try {
-      const res = await fetch(`/api/berichten/${kamer}?na=${laatsteId}`);
-      if (res.status === 401) {
-        window.location.href = '/inloggen.html';
-        return;
-      }
-      const nieuw = await res.json();
-      if (!Array.isArray(nieuw) || nieuw.length === 0) return;
-
-      const onderaan = lijst.scrollHeight - lijst.scrollTop - lijst.clientHeight < 60;
-      const eerste = laatsteId === 0;
-      nieuw.forEach((b) => {
-        voegToe(b);
-        laatsteId = b.id;
-      });
-      if (onderaan || eerste) {
-        lijst.scrollTop = lijst.scrollHeight;
-      }
-    } catch (err) {
-      console.log('Berichten ophalen mislukt', err);
+function vulLijst(lijst, gebruikers) {
+  lijst.innerHTML = "";
+  for (const gebruiker of gebruikers) {
+    if (gebruiker.naam === mijnNaam) {
+      continue;
     }
-  }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const tekst = invoer.value.trim();
-    if (!tekst) return;
-    invoer.value = '';
-
-    await fetch(`/api/berichten/${kamer}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bericht: tekst })
+    const li = document.createElement("li");
+    li.textContent = gebruiker.naam;
+    if (gebruiker.naam === gekozenGebruiker) {
+      li.classList.add("actief");
+    }
+    li.addEventListener("click", function () {
+      kiesGebruiker(gebruiker.naam);
     });
-    await haalOp();
-    lijst.scrollTop = lijst.scrollHeight;
+    lijst.appendChild(li);
+  }
+}
+
+function laadGebruikers() {
+  fetch("/api/online")
+    .then(function (res) {
+      return res.json();
+    })
+    .then(function (data) {
+      vulLijst(onlineLijst, data.online);
+      vulLijst(offlineLijst, data.offline);
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
+
+function kiesGebruiker(naam) {
+  gekozenGebruiker = naam;
+  chatNaam.textContent = naam;
+  tekstInput.disabled = false;
+  verstuurKnop.disabled = false;
+  tekstInput.focus();
+
+  document.querySelectorAll(".gebruikers-lijst li").forEach(function (li) {
+    li.classList.toggle("actief", li.textContent === naam);
   });
 
-  haalOp();
-  setInterval(haalOp, 3000); // elke 3 seconden nieuwe berichten
-})();
+  berichtenVak.innerHTML = "";
+  laadBerichten();
+}
+
+function laadBerichten() {
+  if (!gekozenGebruiker) {
+    return;
+  }
+  const naam = gekozenGebruiker;
+  fetch("/api/berichten/" + encodeURIComponent(naam))
+    .then(function (res) {
+      return res.json();
+    })
+    .then(function (berichten) {
+      // Ondertussen kan er al iemand anders gekozen zijn.
+      if (naam === gekozenGebruiker) {
+        toonBerichten(berichten);
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
+
+function toonBerichten(berichten) {
+  const wasOnderaan =
+    berichtenVak.scrollHeight - berichtenVak.scrollTop - berichtenVak.clientHeight < 50;
+  berichtenVak.innerHTML = "";
+
+  if (berichten.length === 0) {
+    const leeg = document.createElement("p");
+    leeg.className = "chat-leeg";
+    leeg.textContent = "Nog geen berichten met " + gekozenGebruiker + ". Zeg hallo!";
+    berichtenVak.appendChild(leeg);
+    return;
+  }
+
+  for (const bericht of berichten) {
+    const div = document.createElement("div");
+    div.className = "bericht";
+    if (bericht.van_mij) {
+      div.classList.add("van-mij");
+    }
+    div.textContent = bericht.tekst;
+
+    const tijd = document.createElement("span");
+    tijd.className = "tijd";
+    tijd.textContent = bericht.tijd;
+    div.appendChild(tijd);
+
+    berichtenVak.appendChild(div);
+  }
+  if (wasOnderaan) {
+    berichtenVak.scrollTop = berichtenVak.scrollHeight;
+  }
+}
+
+invoerForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+  const tekst = tekstInput.value.trim();
+  if (!tekst || !gekozenGebruiker) {
+    return;
+  }
+
+  fetch("/api/berichten", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ naar: gekozenGebruiker, tekst: tekst }),
+  })
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error("Versturen mislukt");
+      }
+      tekstInput.value = "";
+      berichtenVak.scrollTop = berichtenVak.scrollHeight;
+      laadBerichten();
+    })
+    .catch(function (err) {
+      console.log(err);
+      alert("Het bericht kon niet worden verstuurd.");
+    });
+});
+
+laadGebruikers();
+
+// Elke 3 seconden kijken of er nieuwe berichten zijn.
+setInterval(laadBerichten, 3000);
