@@ -1,6 +1,3 @@
--- importeer deze file als je de tribespot database al hebt
--- dan hoef je niet alles opnieuw te importeren (en raak je de statussen niet kwijt)
-
 USE tribespot;
 
 CREATE TABLE IF NOT EXISTS berichten (

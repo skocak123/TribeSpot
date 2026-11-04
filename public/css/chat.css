@@ -151,3 +151,110 @@
         max-height: 200px;
     }
 }
+
+.inbox-lijst {
+    list-style: none;
+    margin-bottom: 18px;
+}
+
+.inbox-leeg {
+    margin-bottom: 18px;
+    color: var(--grijs);
+    font-size: 14px;
+}
+
+.inbox-leeg[hidden] {
+    display: none;
+}
+
+.inbox-lijst li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--border-radius-l);
+    cursor: pointer;
+}
+
+.inbox-lijst li:hover {
+    background: var(--lichtblauw);
+}
+
+.inbox-lijst li.actief {
+    background: var(--hu-blauw);
+    color: white;
+}
+
+.inbox-avatar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--hu-blauw);
+    color: white;
+    font-weight: bold;
+}
+
+.inbox-lijst li.actief .inbox-avatar {
+    background: white;
+    color: var(--hu-blauw);
+}
+
+.inbox-midden {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.inbox-naam {
+    font-size: 14px;
+}
+
+.inbox-laatste {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    opacity: 0.75;
+}
+
+.inbox-lijst li.ongelezen .inbox-laatste {
+    font-weight: bold;
+    opacity: 1;
+}
+
+.inbox-rechts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.inbox-tijd {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.inbox-lijst li.ongelezen .inbox-tijd {
+    color: var(--hu-groen);
+    font-weight: bold;
+    opacity: 1;
+}
+
+.inbox-badge {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    background: var(--hu-groen);
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 20px;
+    text-align: center;
+}

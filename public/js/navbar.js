@@ -166,3 +166,86 @@ async function controleerVertrektijd() {
 
 controleerVertrektijd();
 setInterval(controleerVertrektijd, 30000);
+
+const paginaTitel = document.title;
+const chatLink = document.querySelector('nav a[href="chat.html"]');
+const chatBadge = document.createElement('span');
+chatBadge.className = 'nav-badge';
+chatBadge.hidden = true;
+if (chatLink) chatLink.appendChild(chatBadge);
+
+const meldingen = document.createElement('div');
+meldingen.className = 'meldingen';
+meldingen.setAttribute('aria-live', 'polite');
+document.body.appendChild(meldingen);
+
+function laatsteMeldingId() {
+  try {
+    return Number(sessionStorage.getItem('laatsteMelding')) || 0;
+  } catch (err) {
+    return 0;
+  }
+}
+
+function bewaarMeldingId(id) {
+  try {
+    sessionStorage.setItem('laatsteMelding', String(id));
+  } catch (err) {}
+}
+
+function toonMelding(bericht) {
+  const melding = document.createElement('a');
+  melding.className = 'melding';
+  melding.href = 'chat.html?met=' + encodeURIComponent(bericht.gebruikersnaam);
+
+  const avatar = document.createElement('span');
+  avatar.className = 'melding-avatar';
+  avatar.textContent = bericht.naam.charAt(0).toUpperCase();
+
+  const tekst = document.createElement('span');
+  tekst.className = 'melding-tekst';
+  const titel = document.createElement('strong');
+  titel.textContent = bericht.naam;
+  const inhoud = document.createElement('span');
+  inhoud.textContent = bericht.tekst.length > 80 ? bericht.tekst.slice(0, 80) + '…' : bericht.tekst;
+  tekst.append(titel, inhoud);
+
+  const sluit = document.createElement('button');
+  sluit.className = 'melding-sluit';
+  sluit.type = 'button';
+  sluit.setAttribute('aria-label', 'Melding sluiten');
+  sluit.textContent = '×';
+  sluit.addEventListener('click', (e) => {
+    e.preventDefault();
+    melding.remove();
+  });
+
+  melding.append(avatar, tekst, sluit);
+  meldingen.appendChild(melding);
+  setTimeout(() => melding.remove(), 6000);
+}
+
+async function verversOngelezen() {
+  try {
+    const antwoord = await fetch('/api/ongelezen');
+    if (!antwoord.ok) return;
+    const { totaal, nieuwste } = await antwoord.json();
+
+    chatBadge.hidden = totaal === 0;
+    chatBadge.textContent = totaal > 99 ? '99+' : totaal;
+    document.title = totaal > 0 ? '(' + totaal + ') ' + paginaTitel : paginaTitel;
+
+    if (nieuwste && nieuwste.id > laatsteMeldingId()) {
+      bewaarMeldingId(nieuwste.id);
+      if (window.huidigeChat !== nieuwste.gebruikersnaam) {
+        toonMelding(nieuwste);
+      }
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+window.verversOngelezen = verversOngelezen;
+verversOngelezen();
+setInterval(verversOngelezen, 5000);

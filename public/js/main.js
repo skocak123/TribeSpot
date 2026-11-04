@@ -374,7 +374,6 @@ function tableSeats(seat) {
   return seatsBox.querySelectorAll('.seat[data-table="' + seat.dataset.table + '"]');
 }
 
-// Een tafel is vol als er op elke stoel van die tafel iemand zit.
 function tableIsFull(seat) {
   const seats = tableSeats(seat);
   for (let i = 0; i < seats.length; i++) {
@@ -385,7 +384,6 @@ function tableIsFull(seat) {
   return true;
 }
 
-// Volle tafels een rode rand en het label "Vol" geven.
 function markFullTables() {
   const tables = seatsBox.querySelectorAll(":not(.seat)[data-table]");
   for (let i = 0; i < tables.length; i++) {
@@ -616,7 +614,6 @@ function findFreeSeat(seats, seat) {
 joinButton.addEventListener("click", function () {
   card.hidePopover();
 
-  // Alleen aan dezelfde tafel aanschuiven, nooit aan een tafel ernaast.
   const freeSeat = findFreeSeat(tableSeats(cardSeat), cardSeat);
   if (freeSeat === null) {
     announcer.textContent = "De tafel van " + cardSeat.dataset.name + " is vol.";

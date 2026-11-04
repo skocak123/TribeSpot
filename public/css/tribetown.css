@@ -816,7 +816,6 @@ h1 {
   background: var(--hu-groen);
 }
 
-/* Volle tafel: rode rand en label "Vol" */
 .desk-row.tafel-vol,
 .group.tafel-vol,
 .pc-row.tafel-vol {

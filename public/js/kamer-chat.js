@@ -27,17 +27,16 @@
 
     const tijd = document.createElement('span');
     tijd.className = 'chat-tijd';
-    tijd.textContent = b.tijd; // de server geeft de tijd al als "13:05"
+    tijd.textContent = b.tijd;
 
     const tekst = document.createElement('p');
-    tekst.textContent = b.bericht; // textContent = veilig
+    tekst.textContent = b.bericht;
 
     rij.append(naam, tijd, tekst);
     lijst.appendChild(rij);
   }
 
   async function haalOp() {
-    // niet twee keer tegelijk ophalen, anders komen berichten dubbel in beeld
     if (bezig) return;
     bezig = true;
     try {
@@ -91,5 +90,5 @@
   });
 
   haalOp();
-  setInterval(haalOp, 3000); // elke 3 seconden nieuwe berichten
+  setInterval(haalOp, 3000);
 })();

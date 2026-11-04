@@ -5,12 +5,12 @@ const tekstInput = document.querySelector(".chat-tekst");
 const verstuurKnop = document.querySelector(".chat-verstuur");
 const onlineLijst = document.querySelector(".online-gebruikers");
 const offlineLijst = document.querySelector(".offline-gebruikers");
+const inboxLijst = document.querySelector(".inbox-lijst");
+const inboxLeeg = document.querySelector(".inbox-leeg");
 
-// Wordt ingevuld met de gebruikersnaam van wie er ingelogd is (via /api/ik).
-// We werken met gebruikersnamen omdat die uniek zijn; twee mensen kunnen dezelfde naam hebben.
 let mijnGebruikersnaam = null;
 
-let gekozenGebruiker = null; // gebruikersnaam van met wie je chat
+let gekozenGebruiker = null;
 
 function vulLijst(lijst, gebruikers) {
   lijst.innerHTML = "";
@@ -50,16 +50,89 @@ function laadGebruikers() {
     });
 }
 
+let inboxBezig = false;
+
+function laadInbox() {
+  if (inboxBezig) return;
+  inboxBezig = true;
+  fetch("/api/inbox")
+    .then(function (res) {
+      return res.ok ? res.json() : [];
+    })
+    .then(toonInbox)
+    .catch(function (err) {
+      console.log(err);
+    })
+    .finally(function () {
+      inboxBezig = false;
+    });
+}
+
+function toonInbox(gesprekken) {
+  inboxLijst.innerHTML = "";
+  inboxLeeg.hidden = gesprekken.length > 0;
+
+  for (const gesprek of gesprekken) {
+    const ongelezen = gesprek.gebruikersnaam === gekozenGebruiker ? 0 : gesprek.ongelezen;
+
+    const li = document.createElement("li");
+    li.dataset.gebruikersnaam = gesprek.gebruikersnaam;
+    li.classList.toggle("ongelezen", ongelezen > 0);
+    li.classList.toggle("actief", gesprek.gebruikersnaam === gekozenGebruiker);
+
+    const avatar = document.createElement("span");
+    avatar.className = "inbox-avatar";
+    avatar.textContent = gesprek.naam.charAt(0).toUpperCase();
+
+    const midden = document.createElement("span");
+    midden.className = "inbox-midden";
+    const naam = document.createElement("strong");
+    naam.className = "inbox-naam";
+    naam.textContent = gesprek.naam;
+    const laatste = document.createElement("span");
+    laatste.className = "inbox-laatste";
+    laatste.textContent = (gesprek.van_mij ? "Jij: " : "") + gesprek.laatste;
+    midden.append(naam, laatste);
+
+    const rechts = document.createElement("span");
+    rechts.className = "inbox-rechts";
+    const tijd = document.createElement("span");
+    tijd.className = "inbox-tijd";
+    tijd.textContent = gesprek.tijd;
+    rechts.appendChild(tijd);
+    if (ongelezen > 0) {
+      const badge = document.createElement("span");
+      badge.className = "inbox-badge";
+      badge.textContent = ongelezen > 99 ? "99+" : ongelezen;
+      badge.setAttribute("aria-label", ongelezen + " ongelezen");
+      rechts.appendChild(badge);
+    }
+
+    li.append(avatar, midden, rechts);
+    li.addEventListener("click", function () {
+      kiesGebruiker(gesprek);
+    });
+    inboxLijst.appendChild(li);
+  }
+}
+
 function kiesGebruiker(gebruiker) {
   gekozenGebruiker = gebruiker.gebruikersnaam;
+  window.huidigeChat = gekozenGebruiker;
   chatNaam.textContent = gebruiker.naam;
   tekstInput.disabled = false;
   verstuurKnop.disabled = false;
   tekstInput.focus();
 
-  document.querySelectorAll(".gebruikers-lijst li").forEach(function (li) {
+  document.querySelectorAll(".gebruikers-lijst li, .inbox-lijst li").forEach(function (li) {
     li.classList.toggle("actief", li.dataset.gebruikersnaam === gekozenGebruiker);
   });
+  const open = inboxLijst.querySelector('li[data-gebruikersnaam="' + CSS.escape(gekozenGebruiker) + '"]');
+  if (open) {
+    open.classList.remove("ongelezen");
+    const badge = open.querySelector(".inbox-badge");
+    if (badge) badge.remove();
+  }
 
   berichtenVak.innerHTML = "";
   laadBerichten();
@@ -75,9 +148,11 @@ function laadBerichten() {
       return res.json();
     })
     .then(function (berichten) {
-      // Ondertussen kan er al iemand anders gekozen zijn.
       if (naam === gekozenGebruiker) {
         toonBerichten(berichten);
+      }
+      if (typeof window.verversOngelezen === "function") {
+        window.verversOngelezen();
       }
     })
     .catch(function (err) {
@@ -137,6 +212,7 @@ invoerForm.addEventListener("submit", function (event) {
       tekstInput.value = "";
       berichtenVak.scrollTop = berichtenVak.scrollHeight;
       laadBerichten();
+      laadInbox();
     })
     .catch(function (err) {
       console.log(err);
@@ -144,7 +220,6 @@ invoerForm.addEventListener("submit", function (event) {
     });
 });
 
-// Eerst ophalen wie er ingelogd is, dan pas de lijst vullen (anders sta je zelf in de lijst).
 fetch("/api/ik")
   .then(function (res) {
     if (res.status === 401) {
@@ -158,11 +233,36 @@ fetch("/api/ik")
       mijnGebruikersnaam = ik.gebruikersnaam;
     }
     laadGebruikers();
+    laadInbox();
+    openGesprekUitLink();
   })
   .catch(function (err) {
     console.log(err);
     laadGebruikers();
   });
 
-// Elke 3 seconden kijken of er nieuwe berichten zijn.
+function openGesprekUitLink() {
+  const met = new URLSearchParams(window.location.search).get("met");
+  if (!met) return;
+
+  fetch("/api/online")
+    .then(function (res) {
+      return res.json();
+    })
+    .then(function (data) {
+      const iedereen = data.online.concat(data.offline);
+      const gebruiker = iedereen.find(function (g) {
+        return g.gebruikersnaam === met;
+      });
+      if (gebruiker) {
+        kiesGebruiker(gebruiker);
+        laadInbox();
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
+
 setInterval(laadBerichten, 3000);
+setInterval(laadInbox, 5000);

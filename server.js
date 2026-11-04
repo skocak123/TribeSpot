@@ -60,6 +60,15 @@ async function zorgVoorFotoKolom() {
     if (!/duplicate column/i.test(err.message)) throw err;
   }
 }
+
+async function zorgVoorGelezenKolom() {
+  try {
+    await query('ALTER TABLE berichten ADD COLUMN gelezen INTEGER NOT NULL DEFAULT 0');
+    await query('UPDATE berichten SET gelezen = 1');
+  } catch (err) {
+    if (!/duplicate column/i.test(err.message)) throw err;
+  }
+}
 async function zorgVoorVerbindingen() {
   await query(`CREATE TABLE IF NOT EXISTS verbindingen (
     gebruiker_a INT NOT NULL,
@@ -139,7 +148,6 @@ app.post('/api/registreren', async (req, res) => {
       (helpen || '').trim().slice(0, 200)
     ]);
 
-    // meteen inloggen, zodat je na het registreren direct naar de regels kunt
     req.session.gebruikerId = resultaat.insertId;
     res.status(201).json({ bericht: 'Account aangemaakt!' });
   } catch (err) {
@@ -207,11 +215,9 @@ app.get('/api/verbindingen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-
 app.put('/api/profiel', alleenIngelogdApi, async (req, res) => {
   const { naam, studiejaar, tribe, interesses, helpen, foto } = req.body;
 
-  // foto: weglaten = niet veranderen, null = verwijderen, anders een kleine afbeelding als data-URL
   if (foto !== undefined && foto !== null &&
       (typeof foto !== 'string' || foto.length > 500000 || !geldigeFoto.test(foto))) {
     return res.status(400).json({ fout: 'Deze foto kan niet worden opgeslagen.' });
@@ -254,7 +260,6 @@ app.delete('/api/account', alleenIngelogdApi, async (req, res) => {
 
   try {
     const id = req.session.gebruikerId;
-    // eerst de privéberichten weg: in MySQL blokkeert die tabel anders het verwijderen
     await query('DELETE FROM berichten WHERE van_id = ? OR naar_id = ?', [id, id]);
     await query('DELETE FROM gebruikers WHERE id = ?', [id]);
     req.session.destroy(() => {
@@ -264,7 +269,6 @@ app.delete('/api/account', alleenIngelogdApi, async (req, res) => {
     databaseFout(res, err);
   }
 });
-
 
 app.post('/api/uitloggen', (req, res) => {
   req.session.destroy(() => {
@@ -478,14 +482,87 @@ app.delete('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-// ---------- PRIVÉCHAT ----------
-// MySQL geeft een Date terug, SQLite een tekst in UTC ('2026-11-04 13:05:00')
 function tijdVan(verstuurdOp) {
   const datum = verstuurdOp instanceof Date ? verstuurdOp : new Date(verstuurdOp.replace(' ', 'T') + 'Z');
   return datum.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 }
 
-// De privéchat zoekt mensen op gebruikersnaam: die is uniek, een naam niet.
+function kortTijdstip(verstuurdOp) {
+  const datum = verstuurdOp instanceof Date ? verstuurdOp : new Date(verstuurdOp.replace(' ', 'T') + 'Z');
+  if (datum.toDateString() === new Date().toDateString()) {
+    return datum.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  }
+  return datum.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+}
+
+app.get('/api/inbox', alleenIngelogdApi, async (req, res) => {
+  const ik = req.session.gebruikerId;
+
+  try {
+    const rijen = await query(
+      'SELECT van_id, naar_id, tekst, verstuurd_op, gelezen FROM berichten WHERE van_id = ? OR naar_id = ? ORDER BY id DESC',
+      [ik, ik]
+    );
+
+    const gesprekken = new Map();
+    for (const rij of rijen) {
+      const anderId = rij.van_id === ik ? rij.naar_id : rij.van_id;
+      if (!gesprekken.has(anderId)) {
+        gesprekken.set(anderId, {
+          laatste: rij.tekst,
+          van_mij: rij.van_id === ik,
+          tijd: kortTijdstip(rij.verstuurd_op),
+          ongelezen: 0
+        });
+      }
+      if (rij.naar_id === ik && !rij.gelezen) {
+        gesprekken.get(anderId).ongelezen++;
+      }
+    }
+
+    if (gesprekken.size === 0) {
+      return res.json([]);
+    }
+
+    const ids = [...gesprekken.keys()];
+    const mensen = await query(
+      `SELECT id, naam, gebruikersnaam FROM gebruikers WHERE id IN (${ids.map(() => '?').join(', ')})`,
+      ids
+    );
+    const perId = new Map(mensen.map((m) => [m.id, m]));
+
+    const inbox = [];
+    for (const [anderId, gesprek] of gesprekken) {
+      const ander = perId.get(anderId);
+      if (!ander) continue;
+      inbox.push({ naam: ander.naam, gebruikersnaam: ander.gebruikersnaam, ...gesprek });
+    }
+    res.json(inbox);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+app.get('/api/ongelezen', alleenIngelogdApi, async (req, res) => {
+  const ik = req.session.gebruikerId;
+
+  try {
+    const [telling] = await query('SELECT COUNT(*) AS totaal FROM berichten WHERE naar_id = ? AND gelezen = 0', [ik]);
+    const [nieuwste] = await query(
+      `SELECT berichten.id, berichten.tekst, gebruikers.naam, gebruikers.gebruikersnaam
+      FROM berichten
+      JOIN gebruikers ON gebruikers.id = berichten.van_id
+      WHERE berichten.naar_id = ? AND berichten.gelezen = 0
+      ORDER BY berichten.id DESC
+      LIMIT 1`,
+      [ik]
+    );
+    res.json({ totaal: Number(telling.totaal), nieuwste: nieuwste || null });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
 app.get('/api/berichten/:gebruikersnaam', alleenIngelogdApi, async (req, res) => {
   const mijnGebruikerId = req.session.gebruikerId;
 
@@ -495,6 +572,11 @@ app.get('/api/berichten/:gebruikersnaam', alleenIngelogdApi, async (req, res) =>
       return res.status(404).json({ fout: 'Deze gebruiker bestaat niet.' });
     }
     const anderId = gebruikers[0].id;
+
+    await query(
+      'UPDATE berichten SET gelezen = 1 WHERE van_id = ? AND naar_id = ? AND gelezen = 0',
+      [anderId, mijnGebruikerId]
+    );
 
     const rijen = await query(
       `SELECT tekst, van_id = ? AS van_mij, verstuurd_op
@@ -514,7 +596,6 @@ app.get('/api/berichten/:gebruikersnaam', alleenIngelogdApi, async (req, res) =>
   }
 });
 
-// ---------- STATUS VERLENGEN ----------
 app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
   try {
     await verwijderVerlopenStatussen();
@@ -566,11 +647,8 @@ app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-// ---------- KAMER-CHATS ----------
-// Eigen tabel kamer_berichten, los van de privéchat in de tabel berichten.
 const KAMERS = ['games', 'muziek', 'sport'];
 
-// tabel aanmaken als hij nog niet bestaat, en bij elke serverstart leegmaken
 async function zorgVoorKamerBerichten() {
   if (process.env.DB_TYPE === 'mysql') {
     await query(`CREATE TABLE IF NOT EXISTS kamer_berichten (
@@ -611,7 +689,7 @@ app.get('/api/kamers/:kamer/berichten', alleenIngelogdApi, async (req, res) => {
       LIMIT 50
     `, [kamer, na]);
 
-    rijen.reverse(); // oudste bovenaan
+    rijen.reverse();
     res.json(rijen.map((rij) => ({
       id: rij.id,
       bericht: rij.bericht,
@@ -646,8 +724,7 @@ app.post('/api/kamers/:kamer/berichten', alleenIngelogdApi, async (req, res) => 
   }
 });
 
-// ---------- SERVER STARTEN ----------
-zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(zorgVoorKamerBerichten).then(() => {
+zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(zorgVoorKamerBerichten).then(zorgVoorGelezenKolom).then(() => {
   app.listen(POORT, () => {
     console.log(`Server draait op http://localhost:${POORT}`);
   });

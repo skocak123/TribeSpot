@@ -66,7 +66,6 @@ async function laadVerbindingen() {
 
 laadVerbindingen();
 
-
 if (sessionStorage.getItem('profielBijgewerkt')) {
   sessionStorage.removeItem('profielBijgewerkt');
 
@@ -208,7 +207,6 @@ const verwijderInvoer = document.querySelector('#verwijder-invoer');
 const verwijderBevestig = document.querySelector('#verwijder-bevestig');
 const verwijderFout = document.querySelector('#verwijder-fout');
 
-// Klik op "Account verwijderen": venster openen
 document.querySelector('#verwijder-account-knop').addEventListener('click', () => {
   verwijderInvoer.value = '';
   verwijderFout.textContent = '';
@@ -217,7 +215,6 @@ document.querySelector('#verwijder-account-knop').addEventListener('click', () =
   verwijderInvoer.focus();
 });
 
-// De rode knop werkt pas als er precies VERWIJDEREN staat
 verwijderInvoer.addEventListener('input', () => {
   verwijderBevestig.disabled = verwijderInvoer.value !== 'VERWIJDEREN';
 });
