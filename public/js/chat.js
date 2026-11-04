@@ -6,8 +6,8 @@ const verstuurKnop = document.querySelector(".chat-verstuur");
 const onlineLijst = document.querySelector(".online-gebruikers");
 const offlineLijst = document.querySelector(".offline-gebruikers");
 
-// Er is nog geen inlogsysteem, dus net als in main.js zijn we altijd selim.
-const mijnNaam = "selim";
+// Wordt ingevuld met de naam van wie er ingelogd is (via /api/ik).
+let mijnNaam = null;
 
 let gekozenGebruiker = null;
 
@@ -137,7 +137,25 @@ invoerForm.addEventListener("submit", function (event) {
     });
 });
 
-laadGebruikers();
+// Eerst ophalen wie er ingelogd is, dan pas de lijst vullen (anders sta je zelf in de lijst).
+fetch("/api/ik")
+  .then(function (res) {
+    if (res.status === 401) {
+      window.location.href = "/inloggen.html";
+      return null;
+    }
+    return res.json();
+  })
+  .then(function (ik) {
+    if (ik) {
+      mijnNaam = ik.naam;
+    }
+    laadGebruikers();
+  })
+  .catch(function (err) {
+    console.log(err);
+    laadGebruikers();
+  });
 
 // Elke 3 seconden kijken of er nieuwe berichten zijn.
 setInterval(laadBerichten, 3000);

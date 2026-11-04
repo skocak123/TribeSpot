@@ -80,7 +80,8 @@ app.get('/', alleenIngelogd, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const beveiligd = ['index.html', 'chat.html', 'profiel.html', 'kamer.html'];
+const beveiligd = ['index.html', 'chat.html', 'profiel.html', 'kamer.html',
+  'games-kamer.html', 'muziek-kamer.html', 'sport-kamer.html'];
 beveiligd.forEach((pagina) => {
   app.get('/' + pagina, alleenIngelogd, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', pagina));
@@ -472,6 +473,7 @@ app.delete('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
+// ---------- PRIVÉCHAT ----------
 // MySQL geeft een Date terug, SQLite een tekst in UTC ('2026-11-04 13:05:00')
 function tijdVan(verstuurdOp) {
   const datum = verstuurdOp instanceof Date ? verstuurdOp : new Date(verstuurdOp.replace(' ', 'T') + 'Z');
@@ -506,6 +508,7 @@ app.get('/api/berichten/:naam', alleenIngelogdApi, async (req, res) => {
   }
 });
 
+// ---------- STATUS VERLENGEN ----------
 app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
   try {
     await verwijderVerlopenStatussen();
@@ -557,7 +560,88 @@ app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(() => {
+// ---------- KAMER-CHATS ----------
+// Eigen tabel kamer_berichten, los van de privéchat in de tabel berichten.
+const KAMERS = ['games', 'muziek', 'sport'];
+
+// tabel aanmaken als hij nog niet bestaat, en bij elke serverstart leegmaken
+async function zorgVoorKamerBerichten() {
+  if (process.env.DB_TYPE === 'mysql') {
+    await query(`CREATE TABLE IF NOT EXISTS kamer_berichten (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      kamer VARCHAR(20) NOT NULL,
+      gebruiker_id INT NOT NULL,
+      bericht VARCHAR(500) NOT NULL,
+      tijd DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (gebruiker_id) REFERENCES gebruikers(id) ON DELETE CASCADE
+    )`);
+  } else {
+    await query(`CREATE TABLE IF NOT EXISTS kamer_berichten (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kamer TEXT NOT NULL,
+      gebruiker_id INTEGER NOT NULL REFERENCES gebruikers(id) ON DELETE CASCADE,
+      bericht TEXT NOT NULL,
+      tijd TEXT DEFAULT CURRENT_TIMESTAMP
+    )`);
+  }
+  await query('DELETE FROM kamer_berichten');
+}
+
+app.get('/api/kamers/:kamer/berichten', alleenIngelogdApi, async (req, res) => {
+  const kamer = req.params.kamer;
+  if (!KAMERS.includes(kamer)) {
+    return res.status(404).json({ fout: 'Deze kamer bestaat niet.' });
+  }
+  const na = Number(req.query.na) || 0;
+
+  try {
+    const rijen = await query(`
+      SELECT kamer_berichten.id, kamer_berichten.bericht, kamer_berichten.tijd,
+             kamer_berichten.gebruiker_id, gebruikers.gebruikersnaam
+      FROM kamer_berichten
+      JOIN gebruikers ON kamer_berichten.gebruiker_id = gebruikers.id
+      WHERE kamer_berichten.kamer = ? AND kamer_berichten.id > ?
+      ORDER BY kamer_berichten.id DESC
+      LIMIT 50
+    `, [kamer, na]);
+
+    rijen.reverse(); // oudste bovenaan
+    res.json(rijen.map((rij) => ({
+      id: rij.id,
+      bericht: rij.bericht,
+      gebruikersnaam: rij.gebruikersnaam,
+      tijd: tijdVan(rij.tijd),
+      ik: rij.gebruiker_id === req.session.gebruikerId
+    })));
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+app.post('/api/kamers/:kamer/berichten', alleenIngelogdApi, async (req, res) => {
+  const kamer = req.params.kamer;
+  const bericht = (req.body.bericht || '').trim();
+
+  if (!KAMERS.includes(kamer)) {
+    return res.status(404).json({ fout: 'Deze kamer bestaat niet.' });
+  }
+  if (bericht.length === 0 || bericht.length > 500) {
+    return res.status(400).json({ fout: 'Een bericht moet tussen 1 en 500 tekens zijn.' });
+  }
+
+  try {
+    await query(
+      'INSERT INTO kamer_berichten (kamer, gebruiker_id, bericht) VALUES (?, ?, ?)',
+      [kamer, req.session.gebruikerId, bericht]
+    );
+    res.status(201).json({ gelukt: true });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+// ---------- SERVER STARTEN ----------
+zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(zorgVoorKamerBerichten).then(() => {
   app.listen(POORT, () => {
     console.log(`Server draait op http://localhost:${POORT}`);
   });

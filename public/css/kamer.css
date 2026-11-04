@@ -5,7 +5,7 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.blauw { 
+.blauw {
     color: #00a1e1;
 }
 
@@ -15,6 +15,8 @@
 
 body {
     background-color: #e6302b;
+    margin: 0;
+    overflow-y: auto;
 }
 
 .logo {
@@ -22,4 +24,91 @@ body {
     padding: 20px;
     font-size: 29px;
     font-weight: bold;
+}
+
+.pagina {
+    min-height: calc(100vh - 115px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.titel-vak {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 5rem;
+}
+
+.titel {
+    padding: 1rem 3rem;
+    background: white;
+    border-radius: 20px;
+    font-size: 4rem;
+    font-weight: bold;
+    color: #4aa3df;
+}
+
+.titel span {
+    color: #d4403a;
+}
+
+
+.kamers {
+    display: flex;
+    gap: 15rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-bottom: 2rem;
+}
+
+.kamer-item {
+    width: 300px;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kamer-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+
+.kamer-item img {
+    width: 100%;
+    height: 150px;
+    padding: 1.2rem;
+    object-fit: contain;
+    background: #d4403a;
+    border-radius: 16px;
+}
+
+
+.kamer-knop {
+    display: block;
+    width: 100%;
+    padding: 0.9rem 0;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 50px;
+    background: #4aa3df;
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.kamer-knop:hover {
+    background: #b5322d;
+}
+
+img.icon {
+    mix-blend-mode: multiply;
 }
