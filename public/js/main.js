@@ -537,8 +537,7 @@ function sendStatus(seat, status, time) {
       werkt_aan: workInput.value,
       beschikbaarheid: statusWords[status],
       tot: time,
-            tafel: Array.from(room.querySelectorAll(".desk-row, .group, .pc-row")).indexOf(seat.closest(".desk-row, .group, .pc-row")) + 1,
-
+      tafel: Number(seat.dataset.table),
     }),
   })
     .then(function (response) {
