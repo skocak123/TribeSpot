@@ -81,7 +81,7 @@ app.get('/', alleenIngelogd, (req, res) => {
 });
 
 const beveiligd = ['index.html', 'chat.html', 'profiel.html', 'kamer.html',
-  'games-kamer.html', 'muziek-kamer.html', 'sport-kamer.html'];
+  'games-kamer.html', 'muziek-kamer.html', 'sport-kamer.html', 'regelspagina.html'];
 beveiligd.forEach((pagina) => {
   app.get('/' + pagina, alleenIngelogd, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', pagina));
@@ -125,7 +125,7 @@ app.post('/api/registreren', async (req, res) => {
     }
 
     const hash = await bcrypt.hash(wachtwoord, 10);
-    await query(`
+    const resultaat = await query(`
       INSERT INTO gebruikers (email, wachtwoord, naam, gebruikersnaam, studiejaar, tribe, interesses, helpen)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `, [
@@ -139,6 +139,8 @@ app.post('/api/registreren', async (req, res) => {
       (helpen || '').trim().slice(0, 200)
     ]);
 
+    // meteen inloggen, zodat je na het registreren direct naar de regels kunt
+    req.session.gebruikerId = resultaat.insertId;
     res.status(201).json({ bericht: 'Account aangemaakt!' });
   } catch (err) {
     databaseFout(res, err);

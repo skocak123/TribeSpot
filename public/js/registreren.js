@@ -27,7 +27,7 @@ formulier.addEventListener('submit', async (event) => {
     const data = await antwoord.json();
 
     if (antwoord.ok) {
-      window.location.href = 'inloggen.html';
+      window.location.href = 'regelspagina.html';
     } else {
       foutmelding.textContent = data.fout;
       foutmelding.hidden = false;

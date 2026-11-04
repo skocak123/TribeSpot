@@ -30,6 +30,8 @@ body {
     border: none;
     color: white;
     border-radius: 999px;
+    display: inline-block;
+    text-decoration: none;
 }
 
 .indemidde > a {
