@@ -59,6 +59,14 @@ if (DB_TYPE === 'mysql') {
       token_hash TEXT NOT NULL,
       verloopt_op INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS berichten (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      van_id INTEGER NOT NULL REFERENCES gebruikers(id) ON DELETE CASCADE,
+      naar_id INTEGER NOT NULL REFERENCES gebruikers(id) ON DELETE CASCADE,
+      tekst TEXT NOT NULL,
+      verstuurd_op TEXT DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   query = async (sql, waarden = []) => {

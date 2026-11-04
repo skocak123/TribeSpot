@@ -1,6 +1,7 @@
 CREATE DATABASE IF NOT EXISTS tribespot CHARACTER SET utf8mb4;
 USE tribespot;
 
+DROP TABLE IF EXISTS berichten;
 DROP TABLE IF EXISTS wachtwoord_resets;
 DROP TABLE IF EXISTS statussen;
 DROP TABLE IF EXISTS gebruikers;
@@ -38,6 +39,16 @@ CREATE TABLE statussen (
     FOREIGN KEY (lokaal_id) REFERENCES lokalen(id),
     UNIQUE (gebruiker_id),
     UNIQUE (lokaal_id, plek)
+);
+
+CREATE TABLE berichten (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    van_id INT NOT NULL,
+    naar_id INT NOT NULL,
+    tekst TEXT NOT NULL,
+    verstuurd_op DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (van_id) REFERENCES gebruikers(id),
+    FOREIGN KEY (naar_id) REFERENCES gebruikers(id)
 );
 
 CREATE TABLE wachtwoord_resets (

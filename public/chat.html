@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Chat - TribeSpot</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/tribetown.css">
     <link rel="stylesheet" href="css/chat.css">
 </head>
-
+<body>
     <nav>
         <header class="balk">Tribe<span>Spot</span></header>
         <ul>
@@ -20,14 +20,32 @@
         </ul>
     </nav>
 
-<body>
-    <main>
-        <h1>De Chat</h1>
+    <main class="chat-layout">
         <section class="chat">
+            <header class="chat-header">
+                <h1 class="chat-naam">Kies iemand om mee te chatten</h1>
+            </header>
 
+            <div class="chat-berichten">
+                <p class="chat-leeg">Selecteer rechts een gebruiker om een privégesprek te starten.</p>
+            </div>
+
+            <form class="chat-invoer">
+                <input type="text" class="chat-tekst" placeholder="Typ een bericht..." autocomplete="off" disabled>
+                <button type="submit" class="chat-verstuur" disabled>Verstuur</button>
+            </form>
         </section>
+
+        <aside class="gebruikers">
+            <h2>Gebruikers</h2>
+            <p class="small-heading">ONLINE</p>
+            <ul class="gebruikers-lijst online-gebruikers"></ul>
+            <p class="small-heading">OFFLINE</p>
+            <ul class="gebruikers-lijst offline-gebruikers"></ul>
+        </aside>
     </main>
+                  
+    <script src="js/chat.js"></script>
     <script src="js/navbar.js"></script>
 </body>
 </html>
-

@@ -472,6 +472,35 @@ app.delete('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
+// MySQL geeft een Date terug, SQLite een tekst in UTC ('2026-11-04 13:05:00')
+function tijdVan(verstuurdOp) {
+  const datum = verstuurdOp instanceof Date ? verstuurdOp : new Date(verstuurdOp.replace(' ', 'T') + 'Z');
+  return datum.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+}
+
+app.get('/api/berichten/:naam', alleenIngelogdApi, async (req, res) => {
+  const mijnGebruikerId = req.session.gebruikerId;
+
+  try {
+    const gebruikers = await query('SELECT id FROM gebruikers WHERE naam = ?', [req.params.naam]);
+    if (gebruikers.length === 0) {
+      return res.status(404).json({ fout: 'Deze gebruiker bestaat niet.' });
+    }
+    const anderId = gebruikers[0].id;
+
+    const rijen = await query(
+      `SELECT tekst, van_id = ? AS van_mij, verstuurd_op
+      FROM berichten
+      WHERE (van_id = ? AND naar_id = ?) OR (van_id = ? AND naar_id = ?)
+      ORDER BY verstuurd_op, id`,
+      [mijnGebruikerId, mijnGebruikerId, anderId, anderId, mijnGebruikerId]
+    );
+
+    res.json(rijen.map((rij) => ({
+      tekst: rij.tekst,
+      van_mij: rij.van_mij,
+      tijd: tijdVan(rij.verstuurd_op)
+    })));
 app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
   try {
     await verwijderVerlopenStatussen();
@@ -482,6 +511,23 @@ app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
   }
 });
 
+app.post('/api/berichten', alleenIngelogdApi, async (req, res) => {
+  const { naar, tekst } = req.body;
+
+  if (!naar || !tekst || !tekst.trim()) {
+    return res.status(400).json({ fout: 'Niet alles is ingevuld.' });
+  }
+
+  try {
+    const gebruikers = await query('SELECT id FROM gebruikers WHERE naam = ?', [naar]);
+    if (gebruikers.length === 0) {
+      return res.status(404).json({ fout: 'Deze gebruiker bestaat niet.' });
+    }
+
+    await query(
+      'INSERT INTO berichten (van_id, naar_id, tekst) VALUES (?, ?, ?)',
+      [req.session.gebruikerId, gebruikers[0].id, tekst.trim()]
+    );
 app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   const { tot } = req.body;
 
@@ -500,6 +546,8 @@ app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
+app.listen(POORT, () => {
+  console.log(`Server draait op http://localhost:${POORT}`);
 zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(() => {
   app.listen(POORT, () => {
     console.log(`Server draait op http://localhost:${POORT}`);
