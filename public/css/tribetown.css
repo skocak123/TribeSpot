@@ -681,6 +681,37 @@ h1 {
 .share-button:hover {
   background-color: var(--hu-rood);
 }
+
+.share-button.locked {
+  position: relative;
+  background-color: #b8b8b8;
+  cursor: not-allowed;
+}
+
+.share-button.locked:hover {
+  background-color: #b8b8b8;
+}
+
+.share-button.locked:hover::after,
+.share-button.locked:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 50;
+  width: max-content;
+  max-width: 240px;
+  padding: 8px 12px;
+  transform: translateX(-50%);
+  border-radius: 8px;
+  background: #333;
+  color: white;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 1.4;
+  text-align: center;
+  white-space: normal;
+}
 .leave-button {
   margin-top: 8px;
   border: 1px solid var(--hu-blauw);
@@ -694,30 +725,6 @@ h1 {
 .connections {
   padding-top: 18px;
   border-top: 1px solid var(--rand);
-}
-
-.connections-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.connections-heading h2 {
-  margin: 0;
-  font-size: 16px;
-}
-
-.connections-heading strong {
-  color: var(--hu-blauw);
-  font-size: 27px;
-}
-
-.connection-text {
-  margin: 8px 0 22px;
-  color: var(--grijs);
-  font-size: 13px;
-  line-height: 1.5;
 }
 
 .connections h3 {

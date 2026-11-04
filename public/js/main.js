@@ -517,9 +517,33 @@ function loadStatuses() {
       if (openRoom !== null) {
         fillSeats();
       }
+      updateShareLock();
     })
     .catch(function () {
       alert("Kan de statussen niet ophalen. Draait de server?");
+    });
+}
+
+let zitAl = false;
+const zitAlTekst = "Je zit er al. Klik eerst op \"Ik ga weg\" om ergens anders te gaan zitten.";
+
+function updateShareLock() {
+  fetch("/api/mijn-status")
+    .then(function (response) {
+      return response.ok ? response.json() : null;
+    })
+    .then(function (status) {
+      zitAl = status !== null;
+      shareButton.classList.toggle("locked", zitAl);
+      shareButton.setAttribute("aria-disabled", zitAl ? "true" : "false");
+      if (zitAl) {
+        shareButton.dataset.tip = zitAlTekst;
+      } else {
+        delete shareButton.dataset.tip;
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
     });
 }
 
@@ -586,6 +610,10 @@ function sendStatus(seat, status, time) {
 }
 
 shareButton.addEventListener("click", function () {
+  if (zitAl) {
+    announcer.textContent = zitAlTekst;
+    return;
+  }
   if (chosenSeat === null || chosenStatus === "" || timeSelect.selectedIndex === 0) {
     alert("Klik op een lege stoel, kies een status en een tijd.");
     return;
