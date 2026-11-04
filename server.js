@@ -314,6 +314,73 @@ app.delete('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
+// ---------- KAMER-CHATS ----------
+const KAMERS = ['games', 'muziek', 'sport'];
+
+// tabel aanmaken als hij nog niet bestaat, en bij elke serverstart leegmaken
+query(`
+  CREATE TABLE IF NOT EXISTS berichten (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    kamer VARCHAR(20) NOT NULL,
+    gebruiker_id INT NOT NULL,
+    bericht VARCHAR(500) NOT NULL,
+    tijd TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`)
+  .then(() => query('TRUNCATE TABLE berichten'))
+  .catch((err) => console.log('Tabel berichten maken of legen mislukt:', err));
+
+app.get('/api/berichten/:kamer', alleenIngelogdApi, async (req, res) => {
+  const kamer = req.params.kamer;
+  if (!KAMERS.includes(kamer)) {
+    return res.status(404).json({ fout: 'Deze kamer bestaat niet.' });
+  }
+  const na = Number(req.query.na) || 0;
+
+  try {
+    const rijen = await query(`
+      SELECT berichten.id, berichten.bericht, berichten.tijd,
+             berichten.gebruiker_id, gebruikers.gebruikersnaam
+      FROM berichten
+      JOIN gebruikers ON berichten.gebruiker_id = gebruikers.id
+      WHERE berichten.kamer = ? AND berichten.id > ?
+      ORDER BY berichten.id DESC
+      LIMIT 50
+    `, [kamer, na]);
+
+    rijen.reverse(); // oudste bovenaan
+    rijen.forEach((rij) => {
+      rij.ik = rij.gebruiker_id === req.session.gebruikerId;
+      delete rij.gebruiker_id;
+    });
+    res.json(rijen);
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
+app.post('/api/berichten/:kamer', alleenIngelogdApi, async (req, res) => {
+  const kamer = req.params.kamer;
+  const bericht = (req.body.bericht || '').trim();
+
+  if (!KAMERS.includes(kamer)) {
+    return res.status(404).json({ fout: 'Deze kamer bestaat niet.' });
+  }
+  if (bericht.length === 0 || bericht.length > 500) {
+    return res.status(400).json({ fout: 'Een bericht moet tussen 1 en 500 tekens zijn.' });
+  }
+
+  try {
+    await query(
+      'INSERT INTO berichten (kamer, gebruiker_id, bericht) VALUES (?, ?, ?)',
+      [kamer, req.session.gebruikerId, bericht]
+    );
+    res.status(201).json({ gelukt: true });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
 app.listen(POORT, () => {
   console.log(`Server draait op http://localhost:${POORT}`);
 });
