@@ -669,8 +669,14 @@ app.get('/api/berichten/:gebruikersnaam', alleenIngelogdApi, async (req, res) =>
 app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
   try {
     await verwijderVerlopenStatussen();
-    const [status] = await query('SELECT tot FROM statussen WHERE gebruiker_id = ?', [req.session.gebruikerId]);
-    res.json(status ? { tot: String(status.tot).slice(0, 5) } : null);
+    const [status] = await query(
+      `SELECT statussen.tot, statussen.plek, lokalen.naam AS lokaal
+      FROM statussen
+      JOIN lokalen ON statussen.lokaal_id = lokalen.id
+      WHERE statussen.gebruiker_id = ?`,
+      [req.session.gebruikerId]
+    );
+    res.json(status ? { tot: String(status.tot).slice(0, 5), lokaal: status.lokaal, plek: status.plek } : null);
   } catch (err) {
     databaseFout(res, err);
   }

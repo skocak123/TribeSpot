@@ -366,7 +366,9 @@ function clearChosenSeat() {
     chosenSeat.removeAttribute("aria-pressed");
   }
   chosenSeat = null;
-  roomInput.value = "";
+  if (!zitAl) {
+    roomInput.value = "";
+  }
   lockStatus(null);
 }
 
@@ -407,7 +409,7 @@ function tableHasJoiner(seat) {
 function lockStatus(forced) {
   for (let i = 0; i < statusButtons.length; i++) {
     const isForced = statusButtons[i].dataset.status === forced;
-    statusButtons[i].disabled = forced !== null && !isForced;
+    statusButtons[i].disabled = zitAl || (forced !== null && !isForced);
 
     if (forced !== null) {
       statusButtons[i].classList.toggle("chosen", isForced);
@@ -441,6 +443,10 @@ function showCard(seat) {
 function clickSeat(seat) {
   if (seat.dataset.name) {
     showCard(seat);
+    return;
+  }
+  if (zitAl) {
+    announcer.textContent = zitAlTekst;
     return;
   }
 
@@ -525,6 +531,60 @@ function loadStatuses() {
 }
 
 let zitAl = false;
+const tijdVak = timeSelect.closest(".field-box");
+const werkVak = workInput.closest(".field-box");
+const statusVak = document.querySelector(".status-buttons");
+const tijdTekst = "Je zit er al. Je tijd kun je pas weer kiezen als je op \"Ik ga weg\" hebt geklikt.";
+const werkTekst = "Je zit er al. Wat je doet kun je pas weer aanpassen als je op \"Ik ga weg\" hebt geklikt.";
+const statusTekst = "Je zit er al. Je status kun je pas weer kiezen als je op \"Ik ga weg\" hebt geklikt.";
+
+function lockVak(vak, opSlot, tekst) {
+  vak.classList.toggle("locked", opSlot);
+  if (opSlot) {
+    vak.dataset.tip = tekst;
+  } else {
+    delete vak.dataset.tip;
+  }
+}
+
+function lockTijd(status, wasAlGezeten) {
+  const opSlot = status !== null;
+  const tot = opSlot ? status.tot : null;
+  if (opSlot) {
+    roomInput.value = status.lokaal + ", stoel " + status.plek;
+  } else if (wasAlGezeten) {
+    roomInput.value = "";
+  }
+  workInput.disabled = opSlot;
+  lockVak(werkVak, opSlot, werkTekst);
+  for (let i = 0; i < statusButtons.length; i++) {
+    statusButtons[i].disabled = opSlot;
+  }
+  lockVak(statusVak, opSlot, statusTekst);
+
+  timeSelect.disabled = opSlot;
+  tijdVak.classList.toggle("locked", opSlot);
+  if (opSlot) {
+    tijdVak.dataset.tip = tijdTekst;
+    let optie = Array.from(timeSelect.options).find(function (o) {
+      return o.value === tot;
+    });
+    if (!optie) {
+      optie = new Option(tot, tot);
+      optie.dataset.tijdelijk = "true";
+      timeSelect.add(optie);
+    }
+    timeSelect.value = tot;
+  } else {
+    delete tijdVak.dataset.tip;
+    timeSelect.querySelectorAll('option[data-tijdelijk="true"]').forEach(function (o) {
+      o.remove();
+    });
+    if (wasAlGezeten) {
+      timeSelect.selectedIndex = 0;
+    }
+  }
+}
 const zitAlTekst = "Je zit er al. Klik eerst op \"Ik ga weg\" om ergens anders te gaan zitten.";
 
 function updateShareLock() {
@@ -533,6 +593,7 @@ function updateShareLock() {
       return response.ok ? response.json() : null;
     })
     .then(function (status) {
+      const wasAlGezeten = zitAl;
       zitAl = status !== null;
       shareButton.classList.toggle("locked", zitAl);
       shareButton.setAttribute("aria-disabled", zitAl ? "true" : "false");
@@ -541,6 +602,7 @@ function updateShareLock() {
       } else {
         delete shareButton.dataset.tip;
       }
+      lockTijd(zitAl ? status : null, wasAlGezeten);
     })
     .catch(function (err) {
       console.log(err);
@@ -609,6 +671,50 @@ function sendStatus(seat, status, time) {
     });
 }
 
+const werkVenster = document.querySelector("#werk-venster");
+const werkForm = werkVenster.querySelector(".werk-form");
+const werkInvoer = werkVenster.querySelector(".werk-invoer");
+const werkFout = werkVenster.querySelector(".werk-fout");
+const werkOk = werkVenster.querySelector(".werk-ok");
+let naWerk = null;
+
+function vraagWerk(knopTekst, doorgaan) {
+  if (workInput.value.trim()) {
+    doorgaan();
+    return;
+  }
+  naWerk = doorgaan;
+  werkOk.textContent = knopTekst;
+  werkInvoer.value = "";
+  werkFout.hidden = true;
+  werkVenster.showModal();
+  werkInvoer.focus();
+}
+
+werkForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+  const werk = werkInvoer.value.trim();
+  if (!werk) {
+    werkFout.hidden = false;
+    werkInvoer.focus();
+    return;
+  }
+  workInput.value = werk;
+  const doorgaan = naWerk;
+  naWerk = null;
+  werkVenster.close();
+  if (doorgaan) doorgaan();
+});
+
+werkVenster.querySelector(".werk-annuleer").addEventListener("click", function () {
+  naWerk = null;
+  werkVenster.close();
+});
+
+werkVenster.addEventListener("close", function () {
+  naWerk = null;
+});
+
 shareButton.addEventListener("click", function () {
   if (zitAl) {
     announcer.textContent = zitAlTekst;
@@ -618,7 +724,12 @@ shareButton.addEventListener("click", function () {
     alert("Klik op een lege stoel, kies een status en een tijd.");
     return;
   }
-  sendStatus(chosenSeat, chosenStatus, timeSelect.value);
+  const seat = chosenSeat;
+  const status = chosenStatus;
+  const time = timeSelect.value;
+  vraagWerk("Deel mijn status", function () {
+    sendStatus(seat, status, time);
+  });
 });
 
 function findFreeSeat(seats, seat) {
@@ -654,7 +765,9 @@ joinButton.addEventListener("click", function () {
     time = cardSeat.dataset.until;
   }
 
-  sendStatus(freeSeat, "green", time);
+  vraagWerk("Aanschuiven", function () {
+    sendStatus(freeSeat, "green", time);
+  });
 });
 
 leaveButton.addEventListener("click", function () {
