@@ -69,17 +69,6 @@ if (DB_TYPE === 'mysql') {
     );
   `);
 
-  if (db.prepare('SELECT COUNT(*) AS aantal FROM lokalen').get().aantal === 0) {
-    const voegToe = db.prepare('INSERT INTO lokalen (naam, verdieping) VALUES (?, ?)');
-    const beganeGrond = ['Kantine', 'Vergaderruimte', 'Lokaal 0.03', 'Lokaal 0.04', 'Lokaal 0.05', 'Lokaal 0.06'];
-    beganeGrond.forEach((naam) => voegToe.run(naam, 0));
-    for (let verdieping = 1; verdieping <= 4; verdieping++) {
-      for (let nummer = 1; nummer <= 6; nummer++) {
-        voegToe.run('Lokaal ' + verdieping + '.0' + nummer, verdieping);
-      }
-    }
-  }
-
   query = async (sql, waarden = []) => {
     const opdracht = db.prepare(sql);
     if (opdracht.reader) return opdracht.all(waarden);
@@ -91,5 +80,20 @@ if (DB_TYPE === 'mysql') {
 }
 
 console.log('Database: ' + DB_TYPE);
+
+const verdiepingen = require('./public/js/lokalen');
+
+(async () => {
+  for (const verdieping of verdiepingen) {
+    for (const lokaal of verdieping.lokalen) {
+      const bestaat = await query('SELECT id FROM lokalen WHERE naam = ?', [lokaal.naam]);
+      if (bestaat.length === 0) {
+        await query('INSERT INTO lokalen (naam, verdieping) VALUES (?, ?)', [lokaal.naam, verdieping.nummer]);
+      }
+    }
+  }
+})().catch((err) => {
+  console.error('Lokalen klaarzetten mislukt:', err.message);
+});
 
 module.exports = { query };

@@ -151,3 +151,8 @@
         max-height: 200px;
     }
 }
+    border-radius: 2%;
+    height: min(600px, calc(100vh - 120px));
+    width: 800px;
+    margin: 0 auto;
+}

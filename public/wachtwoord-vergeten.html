@@ -3,45 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wachtwoord vergeten</title>
-    <link rel="stylesheet" href="css/wachtwoord-vergeten.css">
+    <title>Wachtwoord vergeten - TribeSpot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/inloggen.css">
 </head>
 
 <body>
-    <header class="logo">
-        <nav><span class="blauw">Tribe</span><span class="rood">Spot</span></nav>
-    </header>
+    <header class="balk">Tribe<span>Spot</span></header>
 
-    <main>
-        <section class="kaart">
-            <h1>Wachtwoord vergeten?</h1>
-            <p>Vul je HU-e-mailadres in, dan sturen we je een link om een nieuw wachtwoord te kiezen.</p>
+    <div class="kaart">
+        <span class="label">Wachtwoord</span>
+        <h1>Wachtwoord vergeten?</h1>
+        <p>Vul je HU-e-mailadres in, dan sturen we je een link om een nieuw wachtwoord te kiezen.</p>
 
-            <form id="formulier">
-                <label for="email">HU-e-mailadres</label>
-                <input type="email" id="email" placeholder="naam@student.hu.nl" required>
-                <button type="submit">Verstuur link</button>
-            </form>
+        <form id="formulier">
+            <label for="email">HU-e-mailadres</label>
+            <input type="email" id="email" placeholder="naam@student.hu.nl" required>
+            <button type="submit" class="start">Verstuur link</button>
+        </form>
 
-            <p id="melding" hidden>Er is een mail gestuurd!</p>
+        <p id="melding" class="melding" hidden></p>
 
-            <p><a href="inloggen.html">Terug naar inloggen</a></p>
-        </section>
-    </main>
+        <p class="onderaan"><a href="inloggen.html">Terug naar inloggen</a></p>
+    </div>
 
-   <script>
-    document.getElementById("formulier").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const email = document.getElementById("email").value;
+    <script>
+        const melding = document.getElementById("melding");
 
-        await fetch("/api/wachtwoord-vergeten", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email })
+        document.getElementById("formulier").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+
+            try {
+                const antwoord = await fetch("/api/wachtwoord-vergeten", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
+                const data = await antwoord.json();
+
+                melding.textContent = data.bericht || data.fout;
+            } catch (fout) {
+                melding.textContent = "De server reageert niet. Draait hij wel?";
+            }
+
+            melding.hidden = false;
         });
-
-        document.getElementById("melding").hidden = false;
-    });
     </script>
 </body>
 </html>
