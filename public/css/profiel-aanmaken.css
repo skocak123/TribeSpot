@@ -176,3 +176,9 @@ a {
     color: var(--hu-blauw);
     font-weight: bold;
 }
+
+.foutmelding {
+    color: #c0392b;
+    font-size: 0.9rem;
+    margin: 8px 0;
+}

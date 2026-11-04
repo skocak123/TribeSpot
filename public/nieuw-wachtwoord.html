@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nieuw wachtwoord</title>
+    <link rel="stylesheet" href="css/wachtwoord-vergeten.css">
+</head>
+
+<body>
+    <header class="logo">
+        <nav><span class="blauw">Tribe</span><span class="rood">Spot</span></nav>
+    </header>
+
+    <main>
+        <section class="kaart">
+            <h1>Nieuw wachtwoord</h1>
+            <p>Kies een nieuw wachtwoord van minstens 8 tekens.</p>
+
+            <form id="formulier">
+                <label for="wachtwoord">Nieuw wachtwoord</label>
+                <input type="password" id="wachtwoord" minlength="8" required>
+
+                <label for="herhaal">Herhaal wachtwoord</label>
+                <input type="password" id="herhaal" minlength="8" required>
+
+                <button type="submit">Opslaan</button>
+            </form>
+
+            <p id="melding" hidden></p>
+            <p><a href="inloggen.html">Naar inloggen</a></p>
+        </section>
+    </main>
+
+    <script>
+        const token = new URLSearchParams(window.location.search).get("token");
+        const melding = document.getElementById("melding");
+
+        document.getElementById("formulier").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const wachtwoord = document.getElementById("wachtwoord").value;
+            const herhaal = document.getElementById("herhaal").value;
+
+            if (wachtwoord !== herhaal) {
+                melding.textContent = "De wachtwoorden zijn niet hetzelfde.";
+                melding.hidden = false;
+                return;
+            }
+
+            const antwoord = await fetch("/api/nieuw-wachtwoord", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, wachtwoord })
+            });
+            const data = await antwoord.json();
+
+            melding.textContent = data.bericht || data.fout;
+            melding.hidden = false;
+        });
+    </script>
+</body>
+</html>
