@@ -9,6 +9,6 @@ CREATE TABLE IF NOT EXISTS berichten (
     naar_id INT NOT NULL,
     tekst TEXT NOT NULL,
     verstuurd_op DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (van_id) REFERENCES gebruikers(id),
-    FOREIGN KEY (naar_id) REFERENCES gebruikers(id)
+    FOREIGN KEY (van_id) REFERENCES gebruikers(id) ON DELETE CASCADE,
+    FOREIGN KEY (naar_id) REFERENCES gebruikers(id) ON DELETE CASCADE
 );

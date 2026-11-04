@@ -6,24 +6,31 @@ const verstuurKnop = document.querySelector(".chat-verstuur");
 const onlineLijst = document.querySelector(".online-gebruikers");
 const offlineLijst = document.querySelector(".offline-gebruikers");
 
-// Wordt ingevuld met de naam van wie er ingelogd is (via /api/ik).
-let mijnNaam = null;
+// Wordt ingevuld met de gebruikersnaam van wie er ingelogd is (via /api/ik).
+// We werken met gebruikersnamen omdat die uniek zijn; twee mensen kunnen dezelfde naam hebben.
+let mijnGebruikersnaam = null;
 
-let gekozenGebruiker = null;
+let gekozenGebruiker = null; // gebruikersnaam van met wie je chat
 
 function vulLijst(lijst, gebruikers) {
   lijst.innerHTML = "";
   for (const gebruiker of gebruikers) {
-    if (gebruiker.naam === mijnNaam) {
+    if (gebruiker.gebruikersnaam === mijnGebruikersnaam) {
       continue;
     }
     const li = document.createElement("li");
+    li.dataset.gebruikersnaam = gebruiker.gebruikersnaam;
     li.textContent = gebruiker.naam;
-    if (gebruiker.naam === gekozenGebruiker) {
+
+    const handle = document.createElement("small");
+    handle.textContent = " @" + gebruiker.gebruikersnaam;
+    li.appendChild(handle);
+
+    if (gebruiker.gebruikersnaam === gekozenGebruiker) {
       li.classList.add("actief");
     }
     li.addEventListener("click", function () {
-      kiesGebruiker(gebruiker.naam);
+      kiesGebruiker(gebruiker);
     });
     lijst.appendChild(li);
   }
@@ -43,15 +50,15 @@ function laadGebruikers() {
     });
 }
 
-function kiesGebruiker(naam) {
-  gekozenGebruiker = naam;
-  chatNaam.textContent = naam;
+function kiesGebruiker(gebruiker) {
+  gekozenGebruiker = gebruiker.gebruikersnaam;
+  chatNaam.textContent = gebruiker.naam;
   tekstInput.disabled = false;
   verstuurKnop.disabled = false;
   tekstInput.focus();
 
   document.querySelectorAll(".gebruikers-lijst li").forEach(function (li) {
-    li.classList.toggle("actief", li.textContent === naam);
+    li.classList.toggle("actief", li.dataset.gebruikersnaam === gekozenGebruiker);
   });
 
   berichtenVak.innerHTML = "";
@@ -86,7 +93,7 @@ function toonBerichten(berichten) {
   if (berichten.length === 0) {
     const leeg = document.createElement("p");
     leeg.className = "chat-leeg";
-    leeg.textContent = "Nog geen berichten met " + gekozenGebruiker + ". Zeg hallo!";
+    leeg.textContent = "Nog geen berichten met " + chatNaam.textContent + ". Zeg hallo!";
     berichtenVak.appendChild(leeg);
     return;
   }
@@ -148,7 +155,7 @@ fetch("/api/ik")
   })
   .then(function (ik) {
     if (ik) {
-      mijnNaam = ik.naam;
+      mijnGebruikersnaam = ik.gebruikersnaam;
     }
     laadGebruikers();
   })

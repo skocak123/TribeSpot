@@ -169,7 +169,7 @@ app.post('/api/inloggen', async (req, res) => {
 
 app.get('/api/ik', alleenIngelogdApi, async (req, res) => {
   try {
-    const [gebruiker] = await query('SELECT id, email, naam, foto FROM gebruikers WHERE id = ?', [req.session.gebruikerId]);
+    const [gebruiker] = await query('SELECT id, email, naam, gebruikersnaam, foto FROM gebruikers WHERE id = ?', [req.session.gebruikerId]);
     res.json(gebruiker);
   } catch (err) {
     databaseFout(res, err);
@@ -251,7 +251,10 @@ app.delete('/api/account', alleenIngelogdApi, async (req, res) => {
   }
 
   try {
-    await query('DELETE FROM gebruikers WHERE id = ?', [req.session.gebruikerId]);
+    const id = req.session.gebruikerId;
+    // eerst de privéberichten weg: in MySQL blokkeert die tabel anders het verwijderen
+    await query('DELETE FROM berichten WHERE van_id = ? OR naar_id = ?', [id, id]);
+    await query('DELETE FROM gebruikers WHERE id = ?', [id]);
     req.session.destroy(() => {
       res.json({ bericht: 'Account verwijderd.' });
     });
@@ -395,8 +398,8 @@ app.get('/api/statussen', async (req, res) => {
 app.get('/api/online', async (req, res) => {
   try {
     await verwijderVerlopenStatussen();
-    const online = await query('SELECT naam FROM gebruikers WHERE id IN (SELECT gebruiker_id FROM statussen) ORDER BY naam');
-    const offline = await query('SELECT naam FROM gebruikers WHERE id NOT IN (SELECT gebruiker_id FROM statussen) ORDER BY naam');
+    const online = await query('SELECT naam, gebruikersnaam FROM gebruikers WHERE id IN (SELECT gebruiker_id FROM statussen) ORDER BY naam');
+    const offline = await query('SELECT naam, gebruikersnaam FROM gebruikers WHERE id NOT IN (SELECT gebruiker_id FROM statussen) ORDER BY naam');
     res.json({ online: online, offline: offline });
   } catch (err) {
     databaseFout(res, err);
@@ -480,11 +483,12 @@ function tijdVan(verstuurdOp) {
   return datum.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 }
 
-app.get('/api/berichten/:naam', alleenIngelogdApi, async (req, res) => {
+// De privéchat zoekt mensen op gebruikersnaam: die is uniek, een naam niet.
+app.get('/api/berichten/:gebruikersnaam', alleenIngelogdApi, async (req, res) => {
   const mijnGebruikerId = req.session.gebruikerId;
 
   try {
-    const gebruikers = await query('SELECT id FROM gebruikers WHERE naam = ?', [req.params.naam]);
+    const gebruikers = await query('SELECT id FROM gebruikers WHERE gebruikersnaam = ?', [req.params.gebruikersnaam]);
     if (gebruikers.length === 0) {
       return res.status(404).json({ fout: 'Deze gebruiker bestaat niet.' });
     }
@@ -527,7 +531,7 @@ app.post('/api/berichten', alleenIngelogdApi, async (req, res) => {
   }
 
   try {
-    const gebruikers = await query('SELECT id FROM gebruikers WHERE naam = ?', [naar]);
+    const gebruikers = await query('SELECT id FROM gebruikers WHERE gebruikersnaam = ?', [naar]);
     if (gebruikers.length === 0) {
       return res.status(404).json({ fout: 'Deze gebruiker bestaat niet.' });
     }
