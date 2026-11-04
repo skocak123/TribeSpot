@@ -1010,3 +1010,29 @@ h1 {
   text-align: center;
   white-space: normal;
 }
+
+.join-button.locked {
+  position: relative;
+  background: #b8b8b8;
+  cursor: not-allowed;
+}
+
+.join-button.locked:hover::after,
+.join-button.locked:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 50;
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #333;
+  color: white;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+}

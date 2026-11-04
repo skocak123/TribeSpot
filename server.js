@@ -438,25 +438,31 @@ async function verwijderVerlopenStatussen() {
 
 const geldigeTijd = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-app.get('/api/statussen', async (req, res) => {
+app.get('/api/statussen', alleenIngelogdApi, async (req, res) => {
   try {
     await verwijderVerlopenStatussen();
-    const rijen = await query(`SELECT gebruikers.naam, lokalen.naam AS lokaal, lokalen.verdieping, statussen.plek,
+    const rijen = await query(`SELECT statussen.gebruiker_id, gebruikers.naam, lokalen.naam AS lokaal, lokalen.verdieping, statussen.plek,
       statussen.werkt_aan, statussen.beschikbaarheid, statussen.tot
       FROM statussen
       JOIN gebruikers ON statussen.gebruiker_id = gebruikers.id
       JOIN lokalen ON statussen.lokaal_id = lokalen.id`);
 
-    rijen.forEach((rij) => {
-      rij.tot = String(rij.tot).slice(0, 5);
-    });
-    res.json(rijen);
+    res.json(rijen.map((rij) => ({
+      naam: rij.naam,
+      lokaal: rij.lokaal,
+      verdieping: rij.verdieping,
+      plek: rij.plek,
+      werkt_aan: rij.werkt_aan,
+      beschikbaarheid: rij.beschikbaarheid,
+      tot: String(rij.tot).slice(0, 5),
+      ik: rij.gebruiker_id === req.session.gebruikerId
+    })));
   } catch (err) {
     databaseFout(res, err);
   }
 });
 
-app.get('/api/online', async (req, res) => {
+app.get('/api/online', alleenIngelogdApi, async (req, res) => {
   try {
     await verwijderVerlopenStatussen();
     const online = await query('SELECT naam, gebruikersnaam FROM gebruikers WHERE id IN (SELECT gebruiker_id FROM statussen) ORDER BY naam');

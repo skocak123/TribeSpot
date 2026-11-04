@@ -343,18 +343,15 @@ const statusButtons = document.querySelectorAll(".status-button");
 const shareButton = document.querySelector(".share-button");
 const leaveButton = document.querySelector(".leave-button");
 
-let myName = "";
+fetch("/api/ik").then(function (response) {
+  if (!response.ok) {
+    window.location.href = "inloggen.html";
+  }
+});
 
-fetch("/api/ik")
-  .then(function (response) {
-    if (!response.ok) {
-      window.location.href = "inloggen.html";
-    }
-    return response.json();
-  })
-  .then(function (me) {
-    myName = me.naam;
-  });
+function isMijnStoel(seat) {
+  return seat.dataset.ik === "true";
+}
 
 let chosenStatus = "";
 let chosenSeat = null;
@@ -399,7 +396,7 @@ function markFullTables() {
 function tableHasJoiner(seat) {
   const seats = tableSeats(seat);
   for (let i = 0; i < seats.length; i++) {
-    if (seats[i].classList.contains("green") && seats[i].dataset.name !== myName) {
+    if (seats[i].classList.contains("green") && !isMijnStoel(seats[i])) {
       return true;
     }
   }
@@ -429,8 +426,15 @@ function showCard(seat) {
   card.querySelector(".card-work").textContent = seat.dataset.work;
   card.querySelector(".card-until").textContent = seat.dataset.until;
   const full = tableIsFull(seat);
-  joinButton.hidden = color !== "green" || seat.dataset.name === myName || full;
-  card.querySelector(".card-vol").hidden = !full || seat.dataset.name === myName;
+  joinButton.hidden = color !== "green" || isMijnStoel(seat) || full;
+  card.querySelector(".card-vol").hidden = !full || isMijnStoel(seat);
+  joinButton.classList.toggle("locked", zitAl);
+  joinButton.setAttribute("aria-disabled", zitAl ? "true" : "false");
+  if (zitAl) {
+    joinButton.dataset.tip = "Je zit er al. Klik eerst op \"Ik ga weg\" om bij iemand anders aan te schuiven.";
+  } else {
+    delete joinButton.dataset.tip;
+  }
   cardSeat = seat;
 
   const seatBox = seat.getBoundingClientRect();
@@ -478,6 +482,7 @@ function fillSeats() {
     delete seats[i].dataset.name;
     delete seats[i].dataset.work;
     delete seats[i].dataset.until;
+    delete seats[i].dataset.ik;
   }
 
   const statuses = statusesIn(openRoom.naam);
@@ -492,6 +497,9 @@ function fillSeats() {
     seat.dataset.name = status.naam;
     seat.dataset.work = status.werkt_aan;
     seat.dataset.until = status.tot;
+    if (status.ik) {
+      seat.dataset.ik = "true";
+    }
   }
 
   markFullTables();
@@ -751,6 +759,10 @@ function findFreeSeat(seats, seat) {
 }
 
 joinButton.addEventListener("click", function () {
+  if (zitAl) {
+    announcer.textContent = zitAlTekst;
+    return;
+  }
   card.hidePopover();
 
   const freeSeat = findFreeSeat(tableSeats(cardSeat), cardSeat);
