@@ -178,6 +178,7 @@ function buildDrawnSeats(lokaal) {
   for (let i = 0; i < layout.tables; i++) {
     const table = document.createElement("div");
     table.className = layout.table;
+    table.dataset.table = i + 1;
     for (let j = 0; j < layout.seats; j++) {
       const seat = makeSeat(i + 1, number++);
       if (lokaal.soort === "pc") {
@@ -268,6 +269,7 @@ function buildMapSeats(lokaal) {
 
     const table = document.createElement("span");
     table.className = "map-table";
+    table.dataset.table = i + 1;
     table.style.left = x + "%";
     table.style.top = y + "%";
     map.appendChild(table);
@@ -372,6 +374,28 @@ function tableSeats(seat) {
   return seatsBox.querySelectorAll('.seat[data-table="' + seat.dataset.table + '"]');
 }
 
+// Een tafel is vol als er op elke stoel van die tafel iemand zit.
+function tableIsFull(seat) {
+  const seats = tableSeats(seat);
+  for (let i = 0; i < seats.length; i++) {
+    if (!seats[i].dataset.name) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Volle tafels een rode rand en het label "Vol" geven.
+function markFullTables() {
+  const tables = seatsBox.querySelectorAll(":not(.seat)[data-table]");
+  for (let i = 0; i < tables.length; i++) {
+    const firstSeat = seatsBox.querySelector('.seat[data-table="' + tables[i].dataset.table + '"]');
+    const full = firstSeat !== null && tableIsFull(firstSeat);
+    tables[i].classList.toggle("tafel-vol", full);
+    tables[i].title = full ? "Deze tafel is vol" : "";
+  }
+}
+
 function tableHasJoiner(seat) {
   const seats = tableSeats(seat);
   for (let i = 0; i < seats.length; i++) {
@@ -404,7 +428,9 @@ function showCard(seat) {
   card.querySelector(".card-status").textContent = statusNames[color];
   card.querySelector(".card-work").textContent = seat.dataset.work;
   card.querySelector(".card-until").textContent = seat.dataset.until;
-  joinButton.hidden = color !== "green" || seat.dataset.name === myName;
+  const full = tableIsFull(seat);
+  joinButton.hidden = color !== "green" || seat.dataset.name === myName || full;
+  card.querySelector(".card-vol").hidden = !full || seat.dataset.name === myName;
   cardSeat = seat;
 
   const seatBox = seat.getBoundingClientRect();
@@ -462,6 +488,13 @@ function fillSeats() {
     seat.dataset.name = status.naam;
     seat.dataset.work = status.werkt_aan;
     seat.dataset.until = status.tot;
+  }
+
+  markFullTables();
+  for (let i = 0; i < seats.length; i++) {
+    if (seats[i].dataset.name && tableIsFull(seats[i])) {
+      seats[i].setAttribute("aria-label", seats[i].getAttribute("aria-label") + ", tafel vol");
+    }
   }
 
   const tables = new Set(Array.from(seats, function (seat) {
@@ -583,12 +616,11 @@ function findFreeSeat(seats, seat) {
 joinButton.addEventListener("click", function () {
   card.hidePopover();
 
-  let freeSeat = findFreeSeat(tableSeats(cardSeat), cardSeat);
+  // Alleen aan dezelfde tafel aanschuiven, nooit aan een tafel ernaast.
+  const freeSeat = findFreeSeat(tableSeats(cardSeat), cardSeat);
   if (freeSeat === null) {
-    freeSeat = findFreeSeat(seatsBox.querySelectorAll(".seat"), cardSeat);
-  }
-  if (freeSeat === null) {
-    alert("Er is geen plek meer vrij bij " + cardSeat.dataset.name + ".");
+    announcer.textContent = "De tafel van " + cardSeat.dataset.name + " is vol.";
+    alert("De tafel van " + cardSeat.dataset.name + " is vol. Je kunt hier niet aanschuiven.");
     return;
   }
 

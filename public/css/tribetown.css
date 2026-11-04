@@ -816,6 +816,48 @@ h1 {
   background: var(--hu-groen);
 }
 
+/* Volle tafel: rode rand en label "Vol" */
+.desk-row.tafel-vol,
+.group.tafel-vol,
+.pc-row.tafel-vol {
+  position: relative;
+  box-shadow: 0 0 0 3px var(--hu-rood);
+}
+
+.map-table.tafel-vol {
+  border: 2px solid var(--hu-rood);
+  background: #fbe3e2;
+}
+
+.tafel-vol::after {
+  content: "Vol";
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  padding: 1px 6px;
+  border-radius: var(--border-radius-round);
+  background: var(--hu-rood);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 14px;
+}
+
+.map-table.tafel-vol::after {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  padding: 0 4px;
+}
+
+.card-vol {
+  margin-top: 8px;
+  font-weight: bold;
+  color: var(--hu-rood);
+}
+
 .online-list,
 .offline-list {
   margin: 6px 0 12px;
