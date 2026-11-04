@@ -426,8 +426,8 @@ function showCard(seat) {
   card.querySelector(".card-work").textContent = seat.dataset.work;
   card.querySelector(".card-until").textContent = seat.dataset.until;
   const full = tableIsFull(seat);
-  joinButton.hidden = color !== "green" || isMijnStoel(seat) || full;
-  card.querySelector(".card-vol").hidden = !full || isMijnStoel(seat);
+  joinButton.hidden = color !== "green" || isMijnStoel(seat) || (full && !zitAl);
+  card.querySelector(".card-vol").hidden = !full || isMijnStoel(seat) || zitAl;
   joinButton.classList.toggle("locked", zitAl);
   joinButton.setAttribute("aria-disabled", zitAl ? "true" : "false");
   if (zitAl) {
@@ -684,34 +684,103 @@ const werkForm = werkVenster.querySelector(".werk-form");
 const werkInvoer = werkVenster.querySelector(".werk-invoer");
 const werkFout = werkVenster.querySelector(".werk-fout");
 const werkOk = werkVenster.querySelector(".werk-ok");
+const werkTitel = werkVenster.querySelector("#werk-titel");
+const werkDeel = werkVenster.querySelector(".werk-deel");
+const tijdDeel = werkVenster.querySelector(".tijd-deel");
+const tijdKeuze = werkVenster.querySelector(".tijd-keuze");
 let naWerk = null;
+let werkNodig = false;
+let tijdNodig = false;
 
-function vraagWerk(knopTekst, doorgaan) {
-  if (workInput.value.trim()) {
-    doorgaan();
+function tijdVanNuHHMM() {
+  const nu = new Date();
+  return String(nu.getHours()).padStart(2, "0") + ":" + String(nu.getMinutes()).padStart(2, "0");
+}
+
+function tijdenVanafNu() {
+  const nu = tijdVanNuHHMM();
+  return Array.from(timeSelect.options).slice(1).map(function (o) {
+    return o.value;
+  }).filter(function (t) {
+    return t > nu;
+  });
+}
+
+function vraagGegevens(knopTekst, voorstelTijd, doorgaan) {
+  werkNodig = !workInput.value.trim();
+  tijdNodig = timeSelect.selectedIndex === 0;
+  if (!werkNodig && !tijdNodig) {
+    doorgaan(timeSelect.value);
     return;
   }
+
   naWerk = doorgaan;
   werkOk.textContent = knopTekst;
-  werkInvoer.value = "";
   werkFout.hidden = true;
+  werkDeel.hidden = !werkNodig;
+  tijdDeel.hidden = !tijdNodig;
+  werkTitel.textContent = werkNodig && tijdNodig ? "Nog even invullen"
+    : werkNodig ? "Waar werk je aan?" : "Tot hoe laat blijf je?";
+
+  werkInvoer.value = "";
+  tijdKeuze.innerHTML = "";
+  tijdKeuze.add(new Option("Kies een tijd", ""));
+  const tijden = tijdenVanafNu();
+  if (voorstelTijd && voorstelTijd > tijdVanNuHHMM() && !tijden.includes(voorstelTijd)) {
+    tijden.push(voorstelTijd);
+    tijden.sort();
+  }
+  tijden.forEach(function (t) {
+    tijdKeuze.add(new Option(t, t));
+  });
+  if (voorstelTijd && tijden.includes(voorstelTijd)) {
+    tijdKeuze.value = voorstelTijd;
+  }
+
   werkVenster.showModal();
-  werkInvoer.focus();
+  if (werkNodig) {
+    werkInvoer.focus();
+  } else {
+    tijdKeuze.focus();
+  }
+}
+
+function toonWerkFout(tekst, veld) {
+  werkFout.textContent = tekst;
+  werkFout.hidden = false;
+  veld.focus();
 }
 
 werkForm.addEventListener("submit", function (event) {
   event.preventDefault();
   const werk = werkInvoer.value.trim();
-  if (!werk) {
-    werkFout.hidden = false;
-    werkInvoer.focus();
+  const tijd = tijdKeuze.value;
+
+  if (werkNodig && !werk) {
+    toonWerkFout("Vul in waar je aan werkt.", werkInvoer);
     return;
   }
-  workInput.value = werk;
+  if (tijdNodig && !tijd) {
+    toonWerkFout(tijdKeuze.options.length > 1 ? "Kies tot hoe laat je blijft." : "Er zijn vandaag geen tijden meer om te kiezen.", tijdKeuze);
+    return;
+  }
+
+  if (werkNodig) {
+    workInput.value = werk;
+  }
+  if (tijdNodig) {
+    if (!Array.from(timeSelect.options).some(function (o) { return o.value === tijd; })) {
+      const optie = new Option(tijd, tijd);
+      optie.dataset.tijdelijk = "true";
+      timeSelect.add(optie);
+    }
+    timeSelect.value = tijd;
+  }
+
   const doorgaan = naWerk;
   naWerk = null;
   werkVenster.close();
-  if (doorgaan) doorgaan();
+  if (doorgaan) doorgaan(timeSelect.value);
 });
 
 werkVenster.querySelector(".werk-annuleer").addEventListener("click", function () {
@@ -728,14 +797,13 @@ shareButton.addEventListener("click", function () {
     announcer.textContent = zitAlTekst;
     return;
   }
-  if (chosenSeat === null || chosenStatus === "" || timeSelect.selectedIndex === 0) {
-    alert("Klik op een lege stoel, kies een status en een tijd.");
+  if (chosenSeat === null || chosenStatus === "") {
+    alert("Klik op een lege stoel en kies een status.");
     return;
   }
   const seat = chosenSeat;
   const status = chosenStatus;
-  const time = timeSelect.value;
-  vraagWerk("Deel mijn status", function () {
+  vraagGegevens("Deel mijn status", null, function (time) {
     sendStatus(seat, status, time);
   });
 });
@@ -772,12 +840,7 @@ joinButton.addEventListener("click", function () {
     return;
   }
 
-  let time = timeSelect.value;
-  if (timeSelect.selectedIndex === 0) {
-    time = cardSeat.dataset.until;
-  }
-
-  vraagWerk("Aanschuiven", function () {
+  vraagGegevens("Aanschuiven", cardSeat.dataset.until, function (time) {
     sendStatus(freeSeat, "green", time);
   });
 });

@@ -78,10 +78,16 @@
 
       <dialog id="werk-venster" aria-labelledby="werk-titel">
         <form class="werk-form" novalidate>
-          <h2 id="werk-titel">Waar werk je aan?</h2>
-          <p>Laat anderen weten waar je mee bezig bent, dan weten ze of ze je iets kunnen vragen.</p>
-          <input type="text" class="werk-invoer" maxlength="100" placeholder="bijv. webproject, wiskunde, verslag" aria-label="Waar werk je aan?">
-          <p class="werk-fout" hidden>Vul in waar je aan werkt.</p>
+          <h2 id="werk-titel">Nog even invullen</h2>
+          <div class="werk-deel">
+            <label for="werk-invoer">Waar werk je aan?</label>
+            <input type="text" id="werk-invoer" class="werk-invoer" maxlength="100" placeholder="bijv. webproject, wiskunde, verslag">
+          </div>
+          <div class="tijd-deel">
+            <label for="tijd-keuze">Tot hoe laat blijf je?</label>
+            <select id="tijd-keuze" class="blue-select tijd-keuze"></select>
+          </div>
+          <p class="werk-fout" hidden></p>
           <div class="werk-knoppen">
             <button type="submit" class="werk-ok">Aanschuiven</button>
             <button type="button" class="werk-annuleer">Annuleren</button>

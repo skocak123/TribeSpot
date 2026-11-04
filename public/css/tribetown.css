@@ -864,6 +864,10 @@ h1 {
   color: var(--hu-rood);
 }
 
+.student-card .card-vol[hidden] {
+  display: none;
+}
+
 .online-list,
 .offline-list {
   margin: 6px 0 12px;
@@ -1035,4 +1039,30 @@ h1 {
   line-height: 1.4;
   text-align: left;
   white-space: normal;
+}
+
+.werk-deel,
+.tijd-deel {
+  margin-bottom: 14px;
+}
+
+.werk-deel[hidden],
+.tijd-deel[hidden] {
+  display: none;
+}
+
+.werk-deel label,
+.tijd-deel label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.werk-deel .werk-invoer {
+  margin-bottom: 0;
+}
+
+.tijd-keuze {
+  min-width: 160px;
 }
