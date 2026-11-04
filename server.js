@@ -501,6 +501,11 @@ app.get('/api/berichten/:naam', alleenIngelogdApi, async (req, res) => {
       van_mij: rij.van_mij,
       tijd: tijdVan(rij.verstuurd_op)
     })));
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
 app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
   try {
     await verwijderVerlopenStatussen();
@@ -528,6 +533,12 @@ app.post('/api/berichten', alleenIngelogdApi, async (req, res) => {
       'INSERT INTO berichten (van_id, naar_id, tekst) VALUES (?, ?, ?)',
       [req.session.gebruikerId, gebruikers[0].id, tekst.trim()]
     );
+    res.json({ gelukt: true });
+  } catch (err) {
+    databaseFout(res, err);
+  }
+});
+
 app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   const { tot } = req.body;
 
@@ -546,8 +557,6 @@ app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   }
 });
 
-app.listen(POORT, () => {
-  console.log(`Server draait op http://localhost:${POORT}`);
 zorgVoorFotoKolom().then(zorgVoorVerbindingen).then(() => {
   app.listen(POORT, () => {
     console.log(`Server draait op http://localhost:${POORT}`);
