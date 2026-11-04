@@ -21,6 +21,12 @@ const transporter = nodemailer.createTransport({
 });
 
 app.use(express.json({ limit: '1mb' }));
+app.use((req, res, next) => {
+  if (req.body === undefined || req.body === null || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    req.body = {};
+  }
+  next();
+});
 
 if (!process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET ontbreekt in .env');
@@ -52,6 +58,27 @@ function databaseFout(res, err) {
 }
 
 const geldigeFoto = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+
+const MAX_EMAIL = 100;
+const MAX_WACHTWOORD = 72;
+const MAX_NAAM = 50;
+const MAX_WERKT_AAN = 100;
+const MAX_BERICHT = 1000;
+const geldigeGebruikersnaam = /^[A-Za-z0-9._]{3,30}$/;
+const BESCHIKBAARHEDEN = ['aanschuiven', 'vragen', 'focus'];
+
+function isTekst(waarde) {
+  return typeof waarde === 'string';
+}
+
+function isGevuldeTekst(waarde) {
+  return isTekst(waarde) && waarde.trim().length > 0;
+}
+
+function isPositiefGetal(waarde) {
+  const getal = Number(waarde);
+  return Number.isInteger(getal) && getal > 0 && getal <= 1000;
+}
 
 async function zorgVoorFotoKolom() {
   try {
@@ -102,14 +129,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.post('/api/registreren', async (req, res) => {
   const { email, wachtwoord, naam, gebruikersnaam, studiejaar, tribe, interesses, helpen } = req.body;
 
-  if (!email || !wachtwoord || !naam || !gebruikersnaam) {
+  if (!isGevuldeTekst(email) || !isTekst(wachtwoord) || !wachtwoord ||
+      !isGevuldeTekst(naam) || !isGevuldeTekst(gebruikersnaam)) {
     return res.status(400).json({ fout: 'Vul alle verplichte velden in.' });
+  }
+  if (email.length > MAX_EMAIL) {
+    return res.status(400).json({ fout: 'Je e-mailadres is te lang.' });
   }
   if (!email.endsWith('@student.hu.nl')) {
     return res.status(400).json({ fout: 'Gebruik je HU-e-mailadres (@student.hu.nl).' });
   }
   if (wachtwoord.length < 8) {
     return res.status(400).json({ fout: 'Je wachtwoord moet minstens 8 tekens hebben.' });
+  }
+  if (wachtwoord.length > MAX_WACHTWOORD) {
+    return res.status(400).json({ fout: 'Je wachtwoord mag maximaal ' + MAX_WACHTWOORD + ' tekens hebben.' });
+  }
+  if (naam.trim().length > MAX_NAAM) {
+    return res.status(400).json({ fout: 'Je naam mag maximaal ' + MAX_NAAM + ' tekens hebben.' });
+  }
+  if (!geldigeGebruikersnaam.test(gebruikersnaam.trim())) {
+    return res.status(400).json({ fout: 'Je gebruikersnaam moet 3 tot 30 tekens zijn en mag alleen letters, cijfers, een punt en _ bevatten.' });
+  }
+  if (helpen !== undefined && helpen !== null && !isTekst(helpen)) {
+    return res.status(400).json({ fout: 'Ongeldige invoer bij "kan helpen met".' });
   }
   if (![1, 2, 3, 4].includes(Number(studiejaar))) {
     return res.status(400).json({ fout: 'Kies een geldig studiejaar.' });
@@ -158,8 +201,11 @@ app.post('/api/registreren', async (req, res) => {
 app.post('/api/inloggen', async (req, res) => {
   const { email, wachtwoord } = req.body;
 
-  if (!email || !wachtwoord) {
+  if (!isGevuldeTekst(email) || !isTekst(wachtwoord) || !wachtwoord) {
     return res.status(400).json({ fout: 'Vul je e-mailadres en wachtwoord in.' });
+  }
+  if (email.length > MAX_EMAIL || wachtwoord.length > MAX_WACHTWOORD) {
+    return res.status(401).json({ fout: 'E-mailadres of wachtwoord klopt niet.' });
   }
 
   try {
@@ -223,8 +269,14 @@ app.put('/api/profiel', alleenIngelogdApi, async (req, res) => {
     return res.status(400).json({ fout: 'Deze foto kan niet worden opgeslagen.' });
   }
 
-  if (!naam || !naam.trim()) {
+  if (!isGevuldeTekst(naam)) {
     return res.status(400).json({ fout: 'Vul je naam in.' });
+  }
+  if (naam.trim().length > MAX_NAAM) {
+    return res.status(400).json({ fout: 'Je naam mag maximaal ' + MAX_NAAM + ' tekens hebben.' });
+  }
+  if (helpen !== undefined && helpen !== null && !isTekst(helpen)) {
+    return res.status(400).json({ fout: 'Ongeldige invoer bij "kan helpen met".' });
   }
   if (![1, 2, 3, 4].includes(Number(studiejaar))) {
     return res.status(400).json({ fout: 'Kies een geldig studiejaar.' });
@@ -279,7 +331,7 @@ app.post('/api/uitloggen', (req, res) => {
 app.post('/api/wachtwoord-vergeten', async (req, res) => {
   const { email } = req.body;
 
-  if (!email) {
+  if (!isGevuldeTekst(email) || email.length > MAX_EMAIL) {
     return res.status(400).json({ fout: 'Vul je e-mailadres in.' });
   }
 
@@ -341,11 +393,14 @@ app.post('/api/wachtwoord-vergeten', async (req, res) => {
 app.post('/api/nieuw-wachtwoord', async (req, res) => {
   const { token, wachtwoord } = req.body;
 
-  if (!token || !wachtwoord) {
+  if (!isGevuldeTekst(token) || !isTekst(wachtwoord) || !wachtwoord) {
     return res.status(400).json({ fout: 'Er ontbreekt iets.' });
   }
   if (wachtwoord.length < 8) {
     return res.status(400).json({ fout: 'Je wachtwoord moet minstens 8 tekens hebben.' });
+  }
+  if (wachtwoord.length > MAX_WACHTWOORD) {
+    return res.status(400).json({ fout: 'Je wachtwoord mag maximaal ' + MAX_WACHTWOORD + ' tekens hebben.' });
   }
 
   try {
@@ -416,8 +471,23 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
   const { lokaal, plek, werkt_aan, beschikbaarheid, tot, tafel } = req.body;
   const mijnGebruikerId = req.session.gebruikerId;
 
-  if (!lokaal || !plek || !beschikbaarheid || !tot) {
+  if (!isGevuldeTekst(lokaal) || !plek || !beschikbaarheid || !isTekst(tot)) {
     return res.status(400).json({ fout: 'Niet alles is ingevuld.' });
+  }
+  if (!isPositiefGetal(plek)) {
+    return res.status(400).json({ fout: 'Kies een geldige stoel.' });
+  }
+  if (tafel !== undefined && tafel !== null && tafel !== 0 && !isPositiefGetal(tafel)) {
+    return res.status(400).json({ fout: 'Kies een geldige tafel.' });
+  }
+  if (!BESCHIKBAARHEDEN.includes(beschikbaarheid)) {
+    return res.status(400).json({ fout: 'Kies Aanschuiven, Vragen of Focus.' });
+  }
+  if (werkt_aan !== undefined && werkt_aan !== null && !isTekst(werkt_aan)) {
+    return res.status(400).json({ fout: 'Ongeldige invoer bij "ik werk aan".' });
+  }
+  if (isTekst(werkt_aan) && werkt_aan.trim().length > MAX_WERKT_AAN) {
+    return res.status(400).json({ fout: '"Ik werk aan" mag maximaal ' + MAX_WERKT_AAN + ' tekens hebben.' });
   }
   if (!geldigeTijd.test(tot) || tot <= tijdVanNu()) {
     return res.status(400).json({ fout: 'Kies een tijd die later is dan nu.' });
@@ -440,7 +510,7 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
 
     const bezet = await query(
       'SELECT id FROM statussen WHERE lokaal_id = ? AND plek = ? AND gebruiker_id != ?',
-      [lokaalId, plek, mijnGebruikerId]
+      [lokaalId, Number(plek), mijnGebruikerId]
     );
     if (bezet.length > 0) {
       return res.status(409).json({ fout: 'Deze plek is al bezet.' });
@@ -449,7 +519,7 @@ app.post('/api/statussen', alleenIngelogdApi, async (req, res) => {
     await query('DELETE FROM statussen WHERE gebruiker_id = ?', [mijnGebruikerId]);
     await query(
               'INSERT INTO statussen (gebruiker_id, lokaal_id, werkt_aan, beschikbaarheid, tot, plek, tafel) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [mijnGebruikerId, lokaalId, werkt_aan, beschikbaarheid, tot, plek, tafel || null]
+      [mijnGebruikerId, lokaalId, isTekst(werkt_aan) ? werkt_aan.trim() : '', beschikbaarheid, tot, Number(plek), tafel ? Number(tafel) : null]
       );
       
     if (tafel) {
@@ -609,8 +679,11 @@ app.get('/api/mijn-status', alleenIngelogdApi, async (req, res) => {
 app.post('/api/berichten', alleenIngelogdApi, async (req, res) => {
   const { naar, tekst } = req.body;
 
-  if (!naar || !tekst || !tekst.trim()) {
+  if (!isGevuldeTekst(naar) || !isGevuldeTekst(tekst)) {
     return res.status(400).json({ fout: 'Niet alles is ingevuld.' });
+  }
+  if (tekst.trim().length > MAX_BERICHT) {
+    return res.status(400).json({ fout: 'Een bericht mag maximaal ' + MAX_BERICHT + ' tekens hebben.' });
   }
 
   try {
@@ -632,7 +705,7 @@ app.post('/api/berichten', alleenIngelogdApi, async (req, res) => {
 app.patch('/api/statussen', alleenIngelogdApi, async (req, res) => {
   const { tot } = req.body;
 
-  if (!geldigeTijd.test(tot || '') || tot <= tijdVanNu()) {
+  if (!isTekst(tot) || !geldigeTijd.test(tot) || tot <= tijdVanNu()) {
     return res.status(400).json({ fout: 'Kies een tijd die later is dan nu.' });
   }
 
@@ -704,7 +777,7 @@ app.get('/api/kamers/:kamer/berichten', alleenIngelogdApi, async (req, res) => {
 
 app.post('/api/kamers/:kamer/berichten', alleenIngelogdApi, async (req, res) => {
   const kamer = req.params.kamer;
-  const bericht = (req.body.bericht || '').trim();
+  const bericht = isTekst(req.body.bericht) ? req.body.bericht.trim() : '';
 
   if (!KAMERS.includes(kamer)) {
     return res.status(404).json({ fout: 'Deze kamer bestaat niet.' });

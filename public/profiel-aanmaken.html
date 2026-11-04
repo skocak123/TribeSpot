@@ -19,22 +19,22 @@
         <div class="naast">
             <div>
                 <label for="naam">Naam</label>
-                <input type="text" id="naam" name="naam" placeholder="Je naam" required>
+                <input type="text" id="naam" name="naam" placeholder="Je naam" maxlength="50" required>
             </div>
             <div>
                 <label for="gebruikersnaam">Gebruikersnaam</label>
-                <input type="text" id="gebruikersnaam" name="gebruikersnaam" placeholder="Zo zien anderen jou" required>
+                <input type="text" id="gebruikersnaam" name="gebruikersnaam" placeholder="Zo zien anderen jou" minlength="3" maxlength="30" pattern="[A-Za-z0-9._]+" title="3 tot 30 tekens: letters, cijfers, punt en _" required>
             </div>
         </div>
 
         <div class="naast">
             <div>
                 <label>HU-e-mailadres</label>
-                <input type="email" id="email" name="email" placeholder="naam@student.hu.nl" required>
+                <input type="email" id="email" name="email" placeholder="naam@student.hu.nl" maxlength="100" required>
             </div>
             <div>
                 <label>Wachtwoord</label>
-                <input type="password" id="wachtwoord" name="wachtwoord" placeholder="Kies een wachtwoord" minlength="8" required>
+                <input type="password" id="wachtwoord" name="wachtwoord" placeholder="Kies een wachtwoord" minlength="8" maxlength="72" required>
             </div>
         </div>
 
