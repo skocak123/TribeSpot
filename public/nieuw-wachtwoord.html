@@ -3,34 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nieuw wachtwoord</title>
-    <link rel="stylesheet" href="css/wachtwoord-vergeten.css">
+    <title>Nieuw wachtwoord - TribeSpot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/inloggen.css">
 </head>
 
 <body>
-    <header class="logo">
-        <nav><span class="blauw">Tribe</span><span class="rood">Spot</span></nav>
-    </header>
+    <header class="balk">Tribe<span>Spot</span></header>
 
-    <main>
-        <section class="kaart">
-            <h1>Nieuw wachtwoord</h1>
-            <p>Kies een nieuw wachtwoord van minstens 8 tekens.</p>
+    <div class="kaart">
+        <span class="label">Wachtwoord</span>
+        <h1>Nieuw wachtwoord</h1>
+        <p>Kies een nieuw wachtwoord van minstens 8 tekens.</p>
 
-            <form id="formulier">
-                <label for="wachtwoord">Nieuw wachtwoord</label>
-                <input type="password" id="wachtwoord" minlength="8" required>
+        <form id="formulier">
+            <label for="wachtwoord">Nieuw wachtwoord</label>
+            <input type="password" id="wachtwoord" minlength="8" required>
 
-                <label for="herhaal">Herhaal wachtwoord</label>
-                <input type="password" id="herhaal" minlength="8" required>
+            <label for="herhaal">Herhaal wachtwoord</label>
+            <input type="password" id="herhaal" minlength="8" required>
 
-                <button type="submit">Opslaan</button>
-            </form>
+            <button type="submit" class="start">Opslaan</button>
+        </form>
 
-            <p id="melding" hidden></p>
-            <p><a href="inloggen.html">Naar inloggen</a></p>
-        </section>
-    </main>
+        <p id="melding" class="melding" hidden></p>
+        <p class="onderaan"><a href="inloggen.html">Naar inloggen</a></p>
+    </div>
 
     <script>
         const token = new URLSearchParams(window.location.search).get("token");

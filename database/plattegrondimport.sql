@@ -15,7 +15,8 @@ CREATE TABLE gebruikers (
     studiejaar INT NOT NULL,
     tribe VARCHAR(1) NOT NULL,
     interesses VARCHAR(255) NOT NULL DEFAULT '',
-    helpen VARCHAR(200) NOT NULL DEFAULT ''
+    helpen VARCHAR(200) NOT NULL DEFAULT '',
+    foto MEDIUMTEXT
 );
 
 CREATE TABLE lokalen (
@@ -46,43 +47,3 @@ CREATE TABLE wachtwoord_resets (
     verloopt_op BIGINT NOT NULL,
     FOREIGN KEY (gebruiker_id) REFERENCES gebruikers(id) ON DELETE CASCADE
 );
-
-INSERT INTO lokalen (naam, verdieping) VALUES
-('Kantine', 0),
-('Vergaderruimte', 0),
-('Lokaal 0.03', 0),
-('Lokaal 0.04', 0),
-('Lokaal 0.05', 0),
-('Lokaal 0.06', 0);
-
-INSERT INTO lokalen (naam, verdieping) VALUES
-('Lokaal 1.01', 1),
-('Lokaal 1.02', 1),
-('Lokaal 1.03', 1),
-('Lokaal 1.04', 1),
-('Lokaal 1.05', 1),
-('Lokaal 1.06', 1);
-
-INSERT INTO lokalen (naam, verdieping) VALUES
-('Lokaal 2.01', 2),
-('Lokaal 2.02', 2),
-('Lokaal 2.03', 2),
-('Lokaal 2.04', 2),
-('Lokaal 2.05', 2),
-('Lokaal 2.06', 2);
-
-INSERT INTO lokalen (naam, verdieping) VALUES
-('Lokaal 3.01', 3),
-('Lokaal 3.02', 3),
-('Lokaal 3.03', 3),
-('Lokaal 3.04', 3),
-('Lokaal 3.05', 3),
-('Lokaal 3.06', 3);
-
-INSERT INTO lokalen (naam, verdieping) VALUES
-('Lokaal 4.01', 4),
-('Lokaal 4.02', 4),
-('Lokaal 4.03', 4),
-('Lokaal 4.04', 4),
-('Lokaal 4.05', 4),
-('Lokaal 4.06', 4);
